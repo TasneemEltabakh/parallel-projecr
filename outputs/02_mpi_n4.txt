@@ -1,0 +1,3 @@
+[mpi] rank0 loaded 2049280 doubles from G:\Academic\Application based\Parallel and Distributed Computing\Project\data\data.bin
+[mpi] size=4  n=2049280  avg=1.091615037  min=0.076000000  max=11.122000000
+[mpi] elapsed_ms=3.085

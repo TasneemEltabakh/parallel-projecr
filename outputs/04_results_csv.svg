@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 360" font-family="Inter, sans-serif" font-size="13">
+  <defs>
+    <filter id="sh4" x="-2%" y="-2%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+  <rect width="980" height="360" fill="#f5f3ed"/>
+
+  <!-- window -->
+  <g filter="url(#sh4)">
+    <rect x="20" y="20" width="940" height="320" rx="10" fill="#ffffff" stroke="#e3ddcf"/>
+    <!-- title bar -->
+    <rect x="20" y="20" width="940" height="38" rx="10" fill="#faf8f3" stroke="#e3ddcf"/>
+    <text x="40" y="44" fill="#1c1f26" font-weight="600" font-size="13">results.csv</text>
+    <text x="940" y="44" fill="#6d717c" font-size="11" text-anchor="end">5 rows · benchmark sweep · 15 iterations each</text>
+  </g>
+
+  <!-- column headers -->
+  <g font-size="10.5" font-weight="600" fill="#6d717c">
+    <text x="42"  y="86" letter-spacing="1.4">IMPL</text>
+    <text x="170" y="86" letter-spacing="1.4">N_PROCS</text>
+    <text x="290" y="86" letter-spacing="1.4" text-anchor="end">BEST (MS)</text>
+    <text x="430" y="86" letter-spacing="1.4" text-anchor="end">MEDIAN (MS)</text>
+    <text x="560" y="86" letter-spacing="1.4" text-anchor="end">MEAN (MS)</text>
+    <text x="700" y="86" letter-spacing="1.4" text-anchor="end">SPEEDUP</text>
+    <text x="920" y="86" letter-spacing="1.4" text-anchor="end">NOTE</text>
+  </g>
+  <line x1="40" y1="96" x2="940" y2="96" stroke="#e3ddcf"/>
+
+  <!-- row 1: sequential -->
+  <g font-family="JetBrains Mono, monospace" font-size="12.5" fill="#3f444f">
+    <text x="42"  y="126" font-family="Inter" fill="#1c1f26" font-weight="500">sequential</text>
+    <text x="170" y="126" font-family="Inter">1</text>
+    <text x="290" y="126" text-anchor="end">3.176</text>
+    <text x="430" y="126" text-anchor="end">3.637</text>
+    <text x="560" y="126" text-anchor="end">3.685</text>
+    <text x="700" y="126" text-anchor="end">1.00×</text>
+    <text x="920" y="126" font-family="Inter" font-size="11" fill="#6d717c" text-anchor="end">baseline</text>
+  </g>
+  <line x1="40" y1="142" x2="940" y2="142" stroke="#e3ddcf"/>
+
+  <!-- row 2: mpi 1 -->
+  <g font-family="JetBrains Mono, monospace" font-size="12.5" fill="#3f444f">
+    <text x="42"  y="172" font-family="Inter" fill="#1c1f26" font-weight="500">mpi</text>
+    <text x="170" y="172" font-family="Inter">1</text>
+    <text x="290" y="172" text-anchor="end">1.006</text>
+    <text x="430" y="172" text-anchor="end">1.200</text>
+    <text x="560" y="172" text-anchor="end">1.220</text>
+    <text x="700" y="172" text-anchor="end" fill="#446a4d" font-weight="600">3.16×</text>
+  </g>
+  <line x1="40" y1="188" x2="940" y2="188" stroke="#e3ddcf"/>
+
+  <!-- row 3: mpi 2 — highlight -->
+  <rect x="20" y="188" width="940" height="32" fill="#e6ede4"/>
+  <g font-family="JetBrains Mono, monospace" font-size="12.5" fill="#3f444f">
+    <text x="42"  y="210" font-family="Inter" fill="#2f4f37" font-weight="600">mpi</text>
+    <text x="170" y="210" font-family="Inter" fill="#2f4f37" font-weight="600">2</text>
+    <text x="290" y="210" text-anchor="end" fill="#2f4f37" font-weight="600">0.609</text>
+    <text x="430" y="210" text-anchor="end">1.279</text>
+    <text x="560" y="210" text-anchor="end">1.257</text>
+    <text x="700" y="210" text-anchor="end" fill="#2f4f37" font-weight="700">5.22×</text>
+    <rect x="850" y="195" width="70" height="18" rx="3" fill="#446a4d"/>
+    <text x="885" y="208" font-family="Inter" font-size="10" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0.8">FASTEST</text>
+  </g>
+  <line x1="40" y1="220" x2="940" y2="220" stroke="#e3ddcf"/>
+
+  <!-- row 4: mpi 4 -->
+  <g font-family="JetBrains Mono, monospace" font-size="12.5" fill="#3f444f">
+    <text x="42"  y="248" font-family="Inter" fill="#1c1f26" font-weight="500">mpi</text>
+    <text x="170" y="248" font-family="Inter">4</text>
+    <text x="290" y="248" text-anchor="end">0.711</text>
+    <text x="430" y="248" text-anchor="end">1.177</text>
+    <text x="560" y="248" text-anchor="end">1.133</text>
+    <text x="700" y="248" text-anchor="end" fill="#446a4d" font-weight="600">4.47×</text>
+  </g>
+  <line x1="40" y1="264" x2="940" y2="264" stroke="#e3ddcf"/>
+
+  <!-- row 5: mpi 8 -->
+  <g font-family="JetBrains Mono, monospace" font-size="12.5" fill="#3f444f">
+    <text x="42"  y="294" font-family="Inter" fill="#1c1f26" font-weight="500">mpi</text>
+    <text x="170" y="294" font-family="Inter">8</text>
+    <text x="290" y="294" text-anchor="end">0.886</text>
+    <text x="430" y="294" text-anchor="end">1.477</text>
+    <text x="560" y="294" text-anchor="end">1.446</text>
+    <text x="700" y="294" text-anchor="end" fill="#446a4d" font-weight="600">3.58×</text>
+  </g>
+
+  <!-- footer note -->
+  <text x="40" y="328" font-size="11" fill="#6d717c">All five configurations produced avg = 1.091615037, min = 0.076, max = 11.122 — matching the NumPy reference exactly.</text>
+</svg>

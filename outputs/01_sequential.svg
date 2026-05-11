@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 280" font-family="JetBrains Mono, Consolas, monospace" font-size="13">
+  <defs>
+    <linearGradient id="bar" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#3a3f4b"/>
+      <stop offset="1" stop-color="#2a2f3a"/>
+    </linearGradient>
+    <filter id="sh" x="-2%" y="-2%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="880" height="280" fill="#f5f3ed"/>
+  <g filter="url(#sh)">
+    <rect x="20" y="20" width="840" height="240" rx="9" fill="#1c2329"/>
+    <rect x="20" y="20" width="840" height="32" rx="9" fill="url(#bar)"/>
+    <circle cx="40" cy="36" r="6" fill="#ff5f57"/>
+    <circle cx="60" cy="36" r="6" fill="#febc2e"/>
+    <circle cx="80" cy="36" r="6" fill="#28c840"/>
+    <text x="440" y="40" fill="#cbd2dc" font-size="11" text-anchor="middle">sequential.exe — PowerShell</text>
+  </g>
+  <g fill="#d4d8df">
+    <text x="40" y="80"><tspan fill="#7eb3c4">PS</tspan> <tspan fill="#9bb88a">G:\…\Project&gt;</tspan> <tspan fill="#d4d8df">.\bin\sequential.exe .\data\data.bin</tspan></text>
+    <text x="40" y="108"><tspan fill="#7a8492">[seq]</tspan> loaded <tspan fill="#d6a06b">2049280</tspan> doubles from .\data\data.bin</text>
+    <text x="40" y="132"><tspan fill="#7a8492">[seq]</tspan> n=<tspan fill="#d6a06b">2049280</tspan>  avg=<tspan fill="#9bb88a">1.091615037</tspan>  min=<tspan fill="#9bb88a">0.076000000</tspan>  max=<tspan fill="#9bb88a">11.122000000</tspan></text>
+    <text x="40" y="156"><tspan fill="#7a8492">[seq]</tspan> elapsed_ms=<tspan fill="#d6a06b">3.176</tspan>  <tspan fill="#7a8492">(best run)</tspan></text>
+    <text x="40" y="200" fill="#9bb88a">✓ matches NumPy reference  (avg 1.091615 · min 0.076 · max 11.122)</text>
+    <text x="40" y="232"><tspan fill="#7eb3c4">PS</tspan> <tspan fill="#9bb88a">G:\…\Project&gt;</tspan> <tspan fill="#cbd2dc">_</tspan></text>
+  </g>
+</svg>

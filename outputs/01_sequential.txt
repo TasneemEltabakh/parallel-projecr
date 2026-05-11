@@ -1,0 +1,3 @@
+[seq] loaded 2049280 doubles from G:\Academic\Application based\Parallel and Distributed Computing\Project\data\data.bin
+[seq] n=2049280  avg=1.091615037  min=0.076000000  max=11.122000000
+[seq] elapsed_ms=13.061

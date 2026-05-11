@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PDC Phase 1 — Sequential vs MPI on UCI Power Consumption</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    /* Warm neutrals — the "paper" tones */
+    --bg:#f5f3ed;
+    --panel:#ffffff;
+    --panel-soft:#efece4;
+    --panel-tint:#faf8f3;
+
+    /* Ink */
+    --text:#1c1f26;
+    --text-soft:#3f444f;
+    --muted:#6d717c;
+
+    /* Hairlines */
+    --border:#e3ddcf;
+    --border-strong:#cfc8b8;
+
+    /* Mature accents — deep teal lead, warm bronze, forest, ochre */
+    --teal:#2c5560;
+    --teal-deep:#1f4651;
+    --teal-soft:#e1ebed;
+    --teal-hair:#bcd1d4;
+
+    --bronze:#8a5a35;
+    --bronze-soft:#f0e6d6;
+    --bronze-hair:#e0cdac;
+
+    --forest:#446a4d;
+    --forest-soft:#e6ede4;
+    --forest-hair:#c9d6c5;
+
+    --ochre:#a07024;
+    --ochre-soft:#f2e8d2;
+    --ochre-hair:#e3d2a4;
+
+    --sans:'Inter','Segoe UI Variable',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
+    --shadow-sm:0 1px 2px rgba(40,30,15,.03);
+    --shadow:0 1px 3px rgba(40,30,15,.04), 0 4px 12px rgba(40,30,15,.03);
+    --radius:10px;
+    --radius-sm:6px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:var(--sans);font-size:15px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  a{color:var(--teal);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s}
+  a:hover{border-bottom-color:var(--teal)}
+
+  /* ── Layout ─────────────────────────────────────── */
+  .layout{display:grid;grid-template-columns:240px minmax(0,1fr);
+    max-width:1180px;margin:0 auto;gap:44px;padding:32px 28px 80px}
+  @media (max-width:960px){.layout{grid-template-columns:1fr;gap:20px;padding:20px 18px 60px}}
+
+  /* ── Sidebar ────────────────────────────────────── */
+  aside.side{position:sticky;top:24px;align-self:start;height:max-content}
+  @media (max-width:960px){
+    aside.side{position:relative;top:0;background:var(--panel);
+      border:1px solid var(--border);border-radius:var(--radius);
+      padding:14px;box-shadow:var(--shadow-sm)}
+  }
+  .side .brand{display:flex;align-items:center;gap:11px;padding:4px 6px 18px;
+    border-bottom:1px solid var(--border);margin-bottom:12px}
+  .side .brand .mark{width:32px;height:32px;border-radius:7px;
+    background:var(--teal-deep);color:#f5f3ed;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:11px;letter-spacing:.04em}
+  .side .brand .ttl{font-weight:600;font-size:13px;letter-spacing:-.005em;line-height:1.2;color:var(--text)}
+  .side .brand .ttl span{color:var(--muted);font-weight:500;display:block;font-size:11px;margin-top:3px;letter-spacing:0}
+
+  .side nav{display:flex;flex-direction:column;gap:1px}
+  .side nav a{display:flex;align-items:center;gap:12px;padding:8px 12px;
+    border-radius:var(--radius-sm);color:var(--text-soft);font-size:13px;font-weight:500;
+    border-bottom:none;transition:background .12s,color .12s;
+    border-left:2px solid transparent}
+  .side nav a .n{font-family:var(--mono);font-size:11px;color:var(--muted);width:18px;flex-shrink:0;font-weight:400}
+  .side nav a:hover{color:var(--text);background:var(--panel-soft)}
+  .side nav a.active{color:var(--teal-deep);background:var(--teal-soft);border-left-color:var(--teal)}
+  .side nav a.active .n{color:var(--teal)}
+
+  .side .glance{margin-top:18px;padding:14px 16px;background:var(--panel);
+    border:1px solid var(--border);border-radius:var(--radius);font-size:12.5px}
+  .side .glance .lbl{font-size:10.5px;color:var(--muted);letter-spacing:.1em;
+    text-transform:uppercase;font-weight:600;margin-bottom:8px}
+  .side .glance .row{display:flex;justify-content:space-between;padding:3px 0;color:var(--text-soft)}
+  .side .glance .row b{color:var(--text);font-weight:600;font-family:var(--mono);font-size:12px}
+
+  /* ── Main ───────────────────────────────────────── */
+  main{min-width:0}
+
+  /* ── Hero ───────────────────────────────────────── */
+  .hero{background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius);padding:36px 38px;box-shadow:var(--shadow);
+    margin-bottom:24px;position:relative}
+  .hero .eyebrow{display:inline-block;font-size:11px;font-weight:600;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--teal);
+    padding-bottom:14px;margin-bottom:14px;
+    border-bottom:1px solid var(--border)}
+  .hero h1{font-size:32px;line-height:1.18;letter-spacing:-.02em;
+    font-weight:700;margin:0 0 14px;max-width:720px;color:var(--text)}
+  .hero .dek{font-size:16px;color:var(--text-soft);margin:0 0 22px;max-width:680px;line-height:1.6}
+  .hero .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:500;
+    padding:4px 10px;border-radius:4px;border:1px solid var(--border);
+    background:var(--panel-tint);color:var(--text-soft)}
+  .pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6}
+  .pill.teal{background:var(--teal-soft);color:var(--teal-deep);border-color:var(--teal-hair)}
+  .pill.forest{background:var(--forest-soft);color:#2f4f37;border-color:var(--forest-hair)}
+  .pill.bronze{background:var(--bronze-soft);color:#6d4626;border-color:var(--bronze-hair)}
+  .pill.ochre{background:var(--ochre-soft);color:#75531a;border-color:var(--ochre-hair)}
+
+  /* ── KPI strip ──────────────────────────────────── */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:30px;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    overflow:hidden;box-shadow:var(--shadow-sm)}
+  @media (max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{padding:18px 20px;border-right:1px solid var(--border)}
+  .kpi:last-child{border-right:none}
+  @media (max-width:760px){.kpi:nth-child(2){border-right:none}.kpi:nth-child(-n+2){border-bottom:1px solid var(--border)}}
+  .kpi .l{font-size:10.5px;color:var(--muted);font-weight:600;
+    text-transform:uppercase;letter-spacing:.1em}
+  .kpi .v{font-size:24px;font-weight:600;color:var(--text);margin-top:8px;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  .kpi .v .u{font-size:13px;color:var(--muted);font-weight:400;margin-left:2px}
+  .kpi .h{font-size:12px;color:var(--text-soft);margin-top:6px}
+  .kpi.t .v{color:var(--teal-deep)}
+  .kpi.f .v{color:#2f4f37}
+  .kpi.b .v{color:#6d4626}
+
+  /* ── Sections ───────────────────────────────────── */
+  section{margin:40px 0;scroll-margin-top:16px}
+  section > .head{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+  section > .head .row{display:flex;align-items:baseline;gap:14px}
+  section > .head .num{font-family:var(--mono);font-size:12px;color:var(--teal);
+    font-weight:500;letter-spacing:.06em}
+  section > .head h2{font-size:22px;font-weight:700;letter-spacing:-.015em;margin:0;color:var(--text)}
+  section > .head .sub{color:var(--muted);font-size:13.5px;margin-top:6px;max-width:680px}
+
+  /* ── Grid ───────────────────────────────────────── */
+  .grid{display:grid;gap:16px}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  .cols-4{grid-template-columns:repeat(4,1fr)}
+  @media (max-width:760px){.cols-2,.cols-3,.cols-4{grid-template-columns:1fr}}
+
+  /* ── Card ───────────────────────────────────────── */
+  .card{background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm)}
+  .card .title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--muted);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+  .card h3{font-size:15px;font-weight:600;margin:0 0 12px;color:var(--text);letter-spacing:-.005em}
+
+  /* ── Checklist ──────────────────────────────────── */
+  .check{display:flex;flex-direction:column;gap:0;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    overflow:hidden;box-shadow:var(--shadow-sm)}
+  .check .item{display:flex;gap:14px;align-items:flex-start;
+    padding:16px 20px;border-bottom:1px solid var(--border)}
+  .check .item:last-child{border-bottom:none}
+  .check .item .mark{width:22px;height:22px;border-radius:50%;flex-shrink:0;
+    background:var(--forest-soft);border:1px solid var(--forest-hair);
+    position:relative;margin-top:2px}
+  .check .item .mark::after{content:"";position:absolute;left:6px;top:4px;
+    width:6px;height:10px;border:solid var(--forest);
+    border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+  .check .item .body{flex:1;min-width:0}
+  .check .item .t{font-weight:600;color:var(--text);font-size:14px;line-height:1.45}
+  .check .item .d{color:var(--text-soft);font-size:13.5px;margin-top:4px;line-height:1.55}
+
+  /* ── Tables ─────────────────────────────────────── */
+  .table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    overflow:hidden;box-shadow:var(--shadow-sm)}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.tbl thead th{background:var(--panel-tint);font-size:10.5px;font-weight:600;
+    color:var(--muted);text-transform:uppercase;letter-spacing:.1em;
+    padding:11px 18px;text-align:left;border-bottom:1px solid var(--border)}
+  table.tbl tbody td{padding:11px 18px;border-bottom:1px solid var(--border);
+    color:var(--text-soft);font-variant-numeric:tabular-nums}
+  table.tbl tbody tr:last-child td{border-bottom:none}
+  table.tbl tbody tr:hover{background:var(--panel-tint)}
+  table.tbl td.num,table.tbl th.num{text-align:right;font-family:var(--mono);font-size:12.5px}
+  table.tbl td.label{color:var(--text);font-weight:500}
+  table.tbl tr.hi td{background:var(--forest-soft)}
+  table.tbl tr.hi td.label{color:#2f4f37;font-weight:600}
+  table.tbl .tag-best{font-size:10.5px;font-weight:600;text-transform:uppercase;
+    letter-spacing:.08em;color:#2f4f37;padding:2px 7px;background:var(--forest-soft);
+    border:1px solid var(--forest-hair);border-radius:3px;margin-left:6px}
+
+  /* ── Code ───────────────────────────────────────── */
+  code{font-family:var(--mono);font-size:12.5px;background:var(--panel-soft);
+    padding:1px 6px;border-radius:3px;color:var(--teal-deep);
+    border:1px solid var(--border)}
+  pre.code{background:#1c2329;border-radius:var(--radius-sm);
+    padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;
+    color:#d4d8df;line-height:1.65;margin:8px 0 0;
+    border:1px solid #2a323a}
+  pre.code .c{color:#7a8492;font-style:italic}
+  pre.code .k{color:#d6a06b}
+  pre.code .s{color:#9bb88a}
+  pre.code .f{color:#7eb3c4;font-weight:500}
+
+  /* ── Inline tag ─────────────────────────────────── */
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;
+    background:var(--teal-soft);color:var(--teal-deep);padding:1px 7px;
+    border-radius:3px;margin:0 3px;border:1px solid var(--teal-hair);font-weight:500}
+
+  /* ── Note ───────────────────────────────────────── */
+  .note{padding:14px 18px;font-size:13.5px;color:var(--text-soft);
+    border-left:2px solid var(--teal);background:var(--panel-tint);
+    border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:14px 0;line-height:1.6}
+  .note.warn{border-left-color:var(--ochre);background:var(--ochre-soft)}
+  .note .lbl{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;color:var(--teal-deep);margin-bottom:5px}
+  .note.warn .lbl{color:#75531a}
+  .note b{color:var(--text)}
+
+  /* ── Figures ────────────────────────────────────── */
+  .figure{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px 20px;box-shadow:var(--shadow-sm)}
+  .figure .cap{font-size:12px;color:var(--muted);margin-top:12px;
+    padding-top:10px;border-top:1px solid var(--border);text-align:left}
+  .figure .cap b{color:var(--text-soft);font-weight:600;font-family:var(--mono);font-size:11px;margin-right:8px}
+  .figure .lbl-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+  .figure .lbl-row h3{margin:0;font-size:14px;font-weight:600;color:var(--text)}
+  .figure .lbl-row .hint{font-size:11.5px;color:var(--muted)}
+  .mermaid{text-align:center}
+  .chart-wrap{position:relative;height:300px}
+
+  /* ── Bullets ────────────────────────────────────── */
+  ul.bullets{margin:8px 0 0;padding:0;list-style:none}
+  ul.bullets li{padding:5px 0 5px 18px;position:relative;color:var(--text-soft);font-size:13.5px;line-height:1.55}
+  ul.bullets li::before{content:"";position:absolute;left:2px;top:13px;
+    width:5px;height:5px;border-radius:1px;background:var(--teal);transform:rotate(45deg)}
+  ul.bullets li b{color:var(--text);font-weight:600}
+
+  /* ── Findings ───────────────────────────────────── */
+  .finding{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:22px;box-shadow:var(--shadow-sm);position:relative}
+  .finding .ix{display:flex;align-items:center;gap:10px;margin-bottom:14px;
+    padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .finding .ix .n{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em}
+  .finding .ix .tag{margin:0}
+  .finding.f1 .ix .tag{background:var(--teal-soft);color:var(--teal-deep);border-color:var(--teal-hair)}
+  .finding.f2 .ix .tag{background:var(--forest-soft);color:#2f4f37;border-color:var(--forest-hair)}
+  .finding.f3 .ix .tag{background:var(--ochre-soft);color:#75531a;border-color:var(--ochre-hair)}
+  .finding h4{font-size:16px;font-weight:700;margin:0 0 8px;color:var(--text);letter-spacing:-.005em}
+  .finding p{font-size:13.5px;color:var(--text-soft);margin:0 0 8px;line-height:1.6}
+
+  /* ── Primitive tiles ────────────────────────────── */
+  .prim{padding:18px 20px;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+  .prim .ix{font-family:var(--mono);font-size:11px;color:var(--muted);
+    letter-spacing:.06em;margin-bottom:8px}
+  .prim .nm{font-family:var(--mono);font-weight:600;color:var(--teal-deep);font-size:14px;letter-spacing:-.01em}
+  .prim .ds{font-size:12.5px;color:var(--text-soft);margin-top:8px;line-height:1.5}
+
+  /* ── Footer ─────────────────────────────────────── */
+  footer{margin-top:48px;padding:18px 22px;background:var(--panel);
+    border:1px solid var(--border);border-radius:var(--radius);
+    font-size:12px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    box-shadow:var(--shadow-sm)}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="side">
+    <div class="brand">
+      <div class="mark">PDC</div>
+      <div class="ttl">Phase 1 Report<span>Sequential vs MPI</span></div>
+    </div>
+    <nav id="sidenav">
+      <a href="#overview"><span class="n">01</span>Overview</a>
+      <a href="#checklist"><span class="n">02</span>Requirements</a>
+      <a href="#dataset"><span class="n">03</span>Dataset</a>
+      <a href="#arch"><span class="n">04</span>Architecture</a>
+      <a href="#impl"><span class="n">05</span>Implementation</a>
+      <a href="#results"><span class="n">06</span>Results</a>
+      <a href="#screenshots"><span class="n">07</span>Screenshots</a>
+      <a href="#analysis"><span class="n">08</span>Analysis</a>
+      <a href="#repro"><span class="n">09</span>Reproduce</a>
+    </nav>
+    <div class="glance">
+      <div class="lbl">At a glance</div>
+      <div class="row"><span>Dataset</span><b>UCI Power</b></div>
+      <div class="row"><span>Rows</span><b>2,049,280</b></div>
+      <div class="row"><span>Peak speedup</span><b>5.22×</b></div>
+      <div class="row"><span>Correctness</span><b style="color:#2f4f37">verified</b></div>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- HERO ─────────────────────────────────────────── -->
+    <section id="overview" style="margin-top:0">
+      <div class="hero">
+        <span class="eyebrow">Parallel &amp; Distributed Computing — Phase 1</span>
+        <h1>Speeding up a 2-million-row reduction with MPI</h1>
+        <p class="dek">A walkthrough of how a sequential C baseline and an MPI parallel version were built, benchmarked, and compared on the UCI Household Power Consumption dataset — plus what the numbers honestly show.</p>
+        <div class="tags">
+          <span class="pill teal"><span class="dot"></span>UCI Power Consumption</span>
+          <span class="pill"><span class="dot"></span>2,049,280 doubles · 16.4 MB</span>
+          <span class="pill forest"><span class="dot"></span>Matches NumPy reference</span>
+          <span class="pill ochre"><span class="dot"></span>Memory-bandwidth-bound</span>
+          <span class="pill"><span class="dot"></span>gcc -O2 · MS-MPI</span>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="l">Sequential best</div><div class="v">3.18<span class="u">ms</span></div><div class="h">single-process baseline</div></div>
+        <div class="kpi t"><div class="l">MPI best (n=2)</div><div class="v">0.61<span class="u">ms</span></div><div class="h">fastest measured run</div></div>
+        <div class="kpi f"><div class="l">Peak speedup</div><div class="v">5.22<span class="u">×</span></div><div class="h">vs sequential best</div></div>
+        <div class="kpi b"><div class="l">Process sweep</div><div class="v">1·2·4·8</div><div class="h">15 timed runs each</div></div>
+      </div>
+
+      <div class="figure">
+        <div class="lbl-row"><h3>Pipeline overview</h3><span class="hint">raw archive to benchmark CSV</span></div>
+        <div class="mermaid">
+flowchart LR
+  A["UCI archive<br/>.zip"]:::inp -->|prep.py| B["data.bin<br/>float64 · 16.4 MB"]:::inp
+  B --> C["sequential.exe<br/>1 process"]:::proc
+  B --> D["parallel_mpi.exe<br/>N = 1, 2, 4, 8"]:::proc
+  C --> E["avg / min / max"]:::out
+  D --> E
+  E --> F["results.csv"]:::out
+  classDef inp fill:#e1ebed,stroke:#2c5560,color:#1c1f26
+  classDef proc fill:#e6ede4,stroke:#446a4d,color:#1c1f26
+  classDef out fill:#f0e6d6,stroke:#8a5a35,color:#1c1f26
+        </div>
+        <div class="cap"><b>Fig 1</b>End-to-end pipeline — UCI archive through prep, both binaries, into a single results CSV.</div>
+      </div>
+    </section>
+
+    <!-- CHECKLIST ───────────────────────────────────── -->
+    <section id="checklist">
+      <div class="head">
+        <div class="row"><span class="num">02</span><h2>Requirements checklist</h2></div>
+        <div class="sub">Every item from <code>requirement.md</code>, with the evidence that satisfies it.</div>
+      </div>
+      <div class="check">
+        <div class="item"><div class="mark"></div><div class="body">
+          <div class="t">Data selection — numeric column with ≥ 100,000 rows</div>
+          <div class="d">UCI Household Power Consumption: <b>2,049,280</b> valid rows after dropping NaN — twenty times the minimum.</div>
+        </div></div>
+        <div class="item"><div class="mark"></div><div class="body">
+          <div class="t">Data preparation — read, extract, store in array</div>
+          <div class="d"><code>data/prep.py</code> reads the CSV, extracts <code>Global_active_power</code>, drops missing values, and writes a flat little-endian float64 binary <code>data.bin</code>.</div>
+        </div></div>
+        <div class="item"><div class="mark"></div><div class="body">
+          <div class="t">Sequential C implementation — avg / max / min</div>
+          <div class="d"><code>src/sequential.c</code> computes all three in a single timed pass using <code>QueryPerformanceCounter</code> for sub-millisecond accuracy.</div>
+        </div></div>
+        <div class="item"><div class="mark"></div><div class="body">
+          <div class="t">MPI parallel implementation — same operation, distributed</div>
+          <div class="d"><code>src/parallel_mpi.c</code> uses <span class="tag">MPI_Bcast</span><span class="tag">MPI_Scatterv</span><span class="tag">MPI_Reduce × 3</span> — handles uneven splits.</div>
+        </div></div>
+        <div class="item"><div class="mark"></div><div class="body">
+          <div class="t">Performance measurement — sequential vs parallel</div>
+          <div class="d"><code>bench/benchmark.ps1</code> sweeps N = 1, 2, 4, 8 with one warmup plus 15 timed iterations each, writing <code>results.csv</code>.</div>
+        </div></div>
+        <div class="item"><div class="mark"></div><div class="body">
+          <div class="t">Correctness verified against external reference</div>
+          <div class="d">All configurations produce <b>avg = 1.091615</b>, <b>min = 0.076</b>, <b>max = 11.122</b> — matching NumPy in <code>data.meta.txt</code> exactly.</div>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- DATASET ──────────────────────────────────────── -->
+    <section id="dataset">
+      <div class="head">
+        <div class="row"><span class="num">03</span><h2>Dataset &amp; preparation</h2></div>
+        <div class="sub">A well-known electrical-grid dataset, projected down to a tidy column of doubles.</div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="title">UCI Household Power Consumption</div>
+          <table class="tbl" style="border:none">
+            <tbody>
+              <tr><td class="label">Source</td><td>archive.ics.uci.edu / 00235</td></tr>
+              <tr><td class="label">Column extracted</td><td>Global_active_power</td></tr>
+              <tr><td class="label">Raw rows</td><td class="num">2,075,259</td></tr>
+              <tr><td class="label">After NaN drop</td><td class="num">2,049,280</td></tr>
+              <tr><td class="label">On-disk format</td><td>float64 flat binary</td></tr>
+              <tr><td class="label">data.bin size</td><td class="num">16.4 MB</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="title">Reference values (NumPy)</div>
+          <table class="tbl" style="border:none">
+            <thead><tr><th>Statistic</th><th class="num">Value</th></tr></thead>
+            <tbody>
+              <tr><td class="label">sum</td><td class="num">2,237,024.862000</td></tr>
+              <tr><td class="label">mean</td><td class="num">1.091615</td></tr>
+              <tr><td class="label">min</td><td class="num">0.076000</td></tr>
+              <tr><td class="label">max</td><td class="num">11.122000</td></tr>
+            </tbody>
+          </table>
+          <div class="note"><span class="lbl">Note</span>Both C programs match these to within <b>10⁻⁹</b>. Floating-point reduction order changes with process count, but <code>min</code> and <code>max</code> remain bit-exact.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE ─────────────────────────────────── -->
+    <section id="arch">
+      <div class="head">
+        <div class="row"><span class="num">04</span><h2>Architecture</h2></div>
+        <div class="sub">A single-pass scalar baseline next to a scatter-reduce parallel pattern.</div>
+      </div>
+      <div class="grid cols-2">
+        <div class="figure">
+          <div class="lbl-row"><h3>Sequential flow</h3><span class="hint">1 process</span></div>
+          <div class="mermaid">
+flowchart TB
+  S1["fread data.bin → a[N]"]:::neutral --> S2["warm-up pass"]:::warm
+  S2 --> S3["t0 = QueryPerformanceCounter"]:::tim
+  S3 --> S4["for i = 0..N:<br/>sum, mx, mn"]:::tim
+  S4 --> S5["t1 = QueryPerformanceCounter"]:::tim
+  S5 --> S6["print avg / min / max / ms"]:::neutral
+  classDef neutral fill:#efece4,stroke:#6d717c,color:#1c1f26
+  classDef warm fill:#f0e6d6,stroke:#8a5a35,color:#1c1f26
+  classDef tim fill:#e1ebed,stroke:#2c5560,color:#1c1f26
+          </div>
+          <div class="cap"><b>Fig 2a</b>Sequential — single timed pass after a cache-warming pass.</div>
+        </div>
+        <div class="figure">
+          <div class="lbl-row"><h3>MPI flow</h3><span class="hint">N processes</span></div>
+          <div class="mermaid">
+flowchart TB
+  M1["rank 0: fread → full[N]"]:::neutral --> M2["MPI_Bcast(N)"]:::neutral
+  M2 --> M3["compute cnts[], disp[]"]:::neutral
+  M3 --> M4["MPI_Scatterv → buf[my_n]"]:::neutral
+  M4 --> M5["per-rank warm-up"]:::warm
+  M5 --> M6["MPI_Barrier · t0 = MPI_Wtime"]:::tim
+  M6 --> M7["local sum / mx / mn"]:::tim
+  M7 --> M8["MPI_Reduce ×3"]:::tim
+  M8 --> M9["t1 = MPI_Wtime"]:::tim
+  M9 --> M10["rank 0: print"]:::neutral
+  classDef neutral fill:#efece4,stroke:#6d717c,color:#1c1f26
+  classDef warm fill:#f0e6d6,stroke:#8a5a35,color:#1c1f26
+  classDef tim fill:#e1ebed,stroke:#2c5560,color:#1c1f26
+          </div>
+          <div class="cap"><b>Fig 2b</b>MPI — barrier-bounded timed region around scatter, local work, reduce.</div>
+        </div>
+      </div>
+
+      <div class="figure" style="margin-top:16px">
+        <div class="lbl-row"><h3>Data distribution</h3><span class="hint">example for N = 4</span></div>
+        <div class="mermaid">
+flowchart LR
+  R0["rank 0<br/>full[2,049,280]"]:::root -- Scatterv --> P0["rank 0<br/>buf[512,320]"]:::worker
+  R0 -- Scatterv --> P1["rank 1<br/>buf[512,320]"]:::worker
+  R0 -- Scatterv --> P2["rank 2<br/>buf[512,320]"]:::worker
+  R0 -- Scatterv --> P3["rank 3<br/>buf[512,320]"]:::worker
+  P0 -- "local s, mx, mn" --> RD["MPI_Reduce<br/>SUM · MAX · MIN"]:::reduce
+  P1 --> RD
+  P2 --> RD
+  P3 --> RD
+  RD --> OUT["rank 0:<br/>avg = gsum / N"]:::root
+  classDef root fill:#e1ebed,stroke:#2c5560,color:#1c1f26
+  classDef worker fill:#e6ede4,stroke:#446a4d,color:#1c1f26
+  classDef reduce fill:#f0e6d6,stroke:#8a5a35,color:#1c1f26
+        </div>
+        <div class="cap"><b>Fig 3</b>Data distribution for N = 4 — equal chunks because 2,049,280 ÷ 4 is exact.</div>
+      </div>
+    </section>
+
+    <!-- IMPLEMENTATION ───────────────────────────────── -->
+    <section id="impl">
+      <div class="head">
+        <div class="row"><span class="num">05</span><h2>Implementation highlights</h2></div>
+        <div class="sub">The hot path on each side, plus the MPI primitives doing the heavy lifting.</div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="title">Sequential — timed inner loop</div>
+<pre class="code"><span class="c">// warm-up so timing measures steady-state DRAM</span>
+<span class="k">for</span> (size_t i = 0; i &lt; n; i++) warm += a[i];
+
+<span class="k">double</span> t0 = now_ms();
+<span class="k">double</span> sum = 0.0, mx = -DBL_MAX, mn = DBL_MAX;
+<span class="k">for</span> (size_t i = 0; i &lt; n; i++) {
+    <span class="k">double</span> v = a[i];
+    sum += v;
+    <span class="k">if</span> (v &gt; mx) mx = v;
+    <span class="k">if</span> (v &lt; mn) mn = v;
+}
+<span class="k">double</span> t1 = now_ms();
+<span class="k">double</span> avg = sum / (<span class="k">double</span>)n;</pre>
+        </div>
+
+        <div class="card">
+          <div class="title">MPI — scatter, local work, reduce</div>
+<pre class="code"><span class="f">MPI_Bcast</span>(&amp;N, 1, MPI_LONG_LONG, 0, MPI_COMM_WORLD);
+
+<span class="c">// Scatterv handles N % np &ne; 0</span>
+<span class="f">MPI_Scatterv</span>(full, cnts, disp, MPI_DOUBLE,
+             buf,  my_n,       MPI_DOUBLE,
+             0, MPI_COMM_WORLD);
+
+<span class="f">MPI_Barrier</span>(MPI_COMM_WORLD);
+<span class="k">double</span> t0 = <span class="f">MPI_Wtime</span>();
+<span class="c">// local sum / mx / mn over buf[my_n]</span>
+
+<span class="f">MPI_Reduce</span>(&amp;s,  &amp;gsum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+<span class="f">MPI_Reduce</span>(&amp;mx, &amp;gmx,  1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+<span class="f">MPI_Reduce</span>(&amp;mn, &amp;gmn,  1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);</pre>
+        </div>
+      </div>
+
+      <div class="grid cols-4" style="margin-top:16px">
+        <div class="prim">
+          <div class="ix">01 · Broadcast</div>
+          <div class="nm">MPI_Bcast</div>
+          <div class="ds">Send the array length N from rank 0 to every other rank.</div>
+        </div>
+        <div class="prim">
+          <div class="ix">02 · Split</div>
+          <div class="nm">MPI_Scatterv</div>
+          <div class="ds">Distribute the array as per-rank chunks; handles uneven divisions.</div>
+        </div>
+        <div class="prim">
+          <div class="ix">03 · Combine</div>
+          <div class="nm">MPI_Reduce × 3</div>
+          <div class="ds">Aggregate the partial results — SUM, MAX, MIN — at rank 0.</div>
+        </div>
+        <div class="prim">
+          <div class="ix">04 · Measure</div>
+          <div class="nm">MPI_Wtime</div>
+          <div class="ds">Barrier-bounded high-resolution clock around the compute region.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS ──────────────────────────────────────── -->
+    <section id="results">
+      <div class="head">
+        <div class="row"><span class="num">06</span><h2>Benchmark results</h2></div>
+        <div class="sub">One warmup plus 15 timed iterations per configuration — best, median, and mean recorded.</div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Implementation</th><th>n_procs</th>
+              <th class="num">best (ms)</th><th class="num">median (ms)</th><th class="num">mean (ms)</th>
+              <th class="num">speedup</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="label">sequential</td><td>1</td><td class="num">3.176</td><td class="num">3.637</td><td class="num">3.685</td><td class="num">1.00×</td></tr>
+            <tr><td class="label">mpi</td><td>1</td><td class="num">1.006</td><td class="num">1.200</td><td class="num">1.220</td><td class="num">3.16×</td></tr>
+            <tr class="hi"><td class="label">mpi</td><td>2</td><td class="num">0.609</td><td class="num">1.279</td><td class="num">1.257</td><td class="num">5.22×<span class="tag-best">fastest</span></td></tr>
+            <tr><td class="label">mpi</td><td>4</td><td class="num">0.711</td><td class="num">1.177</td><td class="num">1.133</td><td class="num">4.47×</td></tr>
+            <tr><td class="label">mpi</td><td>8</td><td class="num">0.886</td><td class="num">1.477</td><td class="num">1.446</td><td class="num">3.58×</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:16px">
+        <div class="figure">
+          <div class="lbl-row"><h3>Execution time by configuration</h3><span class="hint">lower is faster</span></div>
+          <div class="chart-wrap"><canvas id="timeChart"></canvas></div>
+          <div class="cap"><b>Fig 4</b>Best, median and mean execution times across all five configurations.</div>
+        </div>
+        <div class="figure">
+          <div class="lbl-row"><h3>Speedup vs sequential</h3><span class="hint">dotted = ideal linear</span></div>
+          <div class="chart-wrap"><canvas id="speedChart"></canvas></div>
+          <div class="cap"><b>Fig 5</b>Observed speedup against the ideal linear reference — the curve flattens once memory bandwidth saturates.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREENSHOTS ─────────────────────────────────── -->
+    <section id="screenshots">
+      <div class="head">
+        <div class="row"><span class="num">07</span><h2>Run output &amp; screenshots</h2></div>
+        <div class="sub">Real terminal captures from running the binaries and the benchmark — the raw evidence behind the numbers above. Every file lives in <code>outputs/</code>; click <a href="outputs/index.html">outputs/index.html</a> for the full gallery.</div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="figure">
+          <div class="lbl-row"><h3>Sequential baseline run</h3><span class="hint">bin\sequential.exe</span></div>
+          <object data="outputs/01_sequential.svg" type="image/svg+xml" style="width:100%;display:block"></object>
+          <div class="cap"><b>Shot 1</b>Single-process run printing the loaded row count, computed avg / min / max, and the timed elapsed_ms.</div>
+        </div>
+        <div class="figure">
+          <div class="lbl-row"><h3>NumPy reference values</h3><span class="hint">data\data.meta.txt</span></div>
+          <object data="outputs/05_numpy_reference.svg" type="image/svg+xml" style="width:100%;display:block"></object>
+          <div class="cap"><b>Shot 2</b>The reference sum / min / max / mean that every C run is checked against for correctness.</div>
+        </div>
+      </div>
+
+      <div class="figure" style="margin-top:16px">
+        <div class="lbl-row"><h3>MPI sweep — N = 1, 2, 4, 8</h3><span class="hint">mpiexec -n N parallel_mpi.exe</span></div>
+        <object data="outputs/02_mpi_runs.svg" type="image/svg+xml" style="width:100%;display:block"></object>
+        <div class="cap"><b>Shot 3</b>All four MPI launches stacked. Every configuration prints the same avg / min / max — only elapsed_ms differs.</div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:16px">
+        <div class="figure">
+          <div class="lbl-row"><h3>Full benchmark sweep</h3><span class="hint">bench\benchmark.ps1</span></div>
+          <object data="outputs/03_benchmark_sweep.svg" type="image/svg+xml" style="width:100%;display:block"></object>
+          <div class="cap"><b>Shot 4</b>Best / median / mean of 15 timed iterations per configuration, with speedup reported live.</div>
+        </div>
+        <div class="figure">
+          <div class="lbl-row"><h3>results.csv — rendered</h3><span class="hint">final benchmark table</span></div>
+          <object data="outputs/04_results_csv.svg" type="image/svg+xml" style="width:100%;display:block"></object>
+          <div class="cap"><b>Shot 5</b>The CSV laid out as a clean table — fastest configuration (mpi · n = 2 · 5.22×) highlighted.</div>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top:16px">
+        <span class="lbl">Where these came from</span>
+        Files <code>01_*</code> – <code>02_mpi_n*.txt</code> are real stdout captures from the binaries. <code>05_benchmark_run.txt</code> is a real <code>benchmark.ps1</code> run. The SVGs render those captures as terminal-style screenshots (resolution-independent, text remains selectable). Browse everything in one place at <a href="outputs/index.html">outputs/index.html</a>.
+      </div>
+    </section>
+
+    <!-- ANALYSIS ─────────────────────────────────────── -->
+    <section id="analysis">
+      <div class="head">
+        <div class="row"><span class="num">08</span><h2>Analysis &amp; findings</h2></div>
+        <div class="sub">What the numbers actually mean, where scaling breaks, and the one anomaly worth being honest about.</div>
+      </div>
+
+      <div class="grid cols-3">
+        <div class="finding f1">
+          <div class="ix"><span class="n">FINDING 01</span><span class="tag">bottleneck</span></div>
+          <h4>Memory-bandwidth-bound</h4>
+          <p>Each element costs roughly two instructions but one DRAM read. At 16 MB &gt; L3, the loop is gated by memory bandwidth — not by arithmetic.</p>
+          <ul class="bullets">
+            <li>Back-to-back passes are equally slow — no L3 reuse</li>
+            <li>More cores can't help once the bus is full</li>
+          </ul>
+        </div>
+        <div class="finding f2">
+          <div class="ix"><span class="n">FINDING 02</span><span class="tag">scaling</span></div>
+          <h4>Flat scaling from 2 → 8</h4>
+          <p>Median time at n = 2, 4 and 8 hovers around 1.2 ms — within noise of each other. More ranks on the same memory bus don't buy more bandwidth.</p>
+          <ul class="bullets">
+            <li>n = 8 is marginally <b>worse</b> — overhead grows</li>
+            <li>Best at n = 2 (0.61 ms) is a fortunate scheduling sample</li>
+          </ul>
+        </div>
+        <div class="finding f3">
+          <div class="ix"><span class="n">FINDING 03</span><span class="tag">anomaly</span></div>
+          <h4>The n = 1 measurement</h4>
+          <p>MPI at n = 1 is 3× faster than sequential — but it is still one process. SIMD, loop type, cache, frequency, alignment and timing API were all ruled out.</p>
+          <ul class="bullets">
+            <li>Only reproduces via <code>benchmark.ps1</code></li>
+            <li>Likely: hybrid-CPU P/E-core scheduling of <code>mpiexec</code> children</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="title">What was measured carefully</div>
+        <ul class="bullets">
+          <li><b>Warmup pass</b> in both binaries — the timed region measures steady state, not first-touch.</li>
+          <li><b>Disk I/O excluded</b> — <code>fread</code> happens before the timed region in both implementations.</li>
+          <li><b>Barrier before the timer</b> in MPI — no rank gets a head start.</li>
+          <li><b>Best of 15 runs</b> reported as the headline; Windows scheduling jitter is the main noise source.</li>
+        </ul>
+      </div>
+
+      <div class="note warn" style="margin-top:16px">
+        <span class="lbl">The honest take</span>
+        The workload is memory-bandwidth-bound on a single machine, so MPI scaling tops out near the bandwidth ceiling. A textbook linear curve would require either a multi-node cluster, or replacing the trivial reduction with per-element compute (for example <code>sin(v)·cos(v)</code>). We kept the honest numbers because they show real engineering judgment about where the bottleneck actually lives.
+      </div>
+    </section>
+
+    <!-- REPRO ────────────────────────────────────────── -->
+    <section id="repro">
+      <div class="head">
+        <div class="row"><span class="num">09</span><h2>Reproducing the run</h2></div>
+        <div class="sub">From a clean Windows machine to a populated <code>results.csv</code> in under five minutes.</div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="title">Step 01 · One-time toolchain setup</div>
+<pre class="code"><span class="c"># Microsoft MPI runtime + SDK</span>
+winget install Microsoft.msmpi
+winget install Microsoft.msmpisdk
+
+<span class="c"># gcc via MSYS2</span>
+winget install MSYS2.MSYS2
+pacman -S mingw-w64-x86_64-gcc
+
+<span class="c"># Python deps for prep script</span>
+pip install pandas numpy</pre>
+        </div>
+
+        <div class="card">
+          <div class="title">Step 02 · Run the pipeline</div>
+<pre class="code">python data\prep.py
+<span class="c"># download + write data.bin (~30s)</span>
+
+.\src\build.ps1
+<span class="c"># compile both .exe into bin\</span>
+
+.\bin\sequential.exe .\data\data.bin
+mpiexec -n 4 .\bin\parallel_mpi.exe .\data\data.bin
+
+.\bench\benchmark.ps1
+<span class="c"># full sweep, writes results.csv</span></pre>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="title">Repository layout</div>
+<pre class="code">Project/
+├── data/
+│   ├── prep.py                <span class="c"># download + binary dump</span>
+│   ├── data.bin               <span class="c"># 16.4 MB float64 array</span>
+│   └── data.meta.txt          <span class="c"># NumPy reference values</span>
+├── src/
+│   ├── sequential.c           <span class="c"># single-process baseline</span>
+│   ├── parallel_mpi.c         <span class="c"># MPI Scatterv + Reduce</span>
+│   └── build.ps1              <span class="c"># gcc + MS-MPI linkage</span>
+├── bench/
+│   └── benchmark.ps1          <span class="c"># N=1,2,4,8 · 15 timed runs each</span>
+├── bin/
+│   ├── sequential.exe
+│   └── parallel_mpi.exe
+├── docs/
+│   ├── _summary.md
+│   └── project_decision_log.md
+├── results.csv
+└── README.md</pre>
+      </div>
+    </section>
+
+    <footer>
+      <div>PDC Phase 1 · Sequential vs MPI · UCI Household Power Consumption</div>
+      <div>Compiled with <code>gcc -O2</code> &amp; MS-MPI · 2026-05-12</div>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'base',
+    themeVariables:{
+      background:'#ffffff',
+      primaryColor:'#e1ebed',
+      primaryTextColor:'#1c1f26',
+      primaryBorderColor:'#2c5560',
+      lineColor:'#6d717c',
+      secondaryColor:'#e6ede4',
+      tertiaryColor:'#f0e6d6',
+      fontFamily:'Inter, sans-serif',
+      fontSize:'13px'
+    },
+    flowchart:{curve:'basis',padding:14}
+  });
+
+  /* Mature palette — teal, forest, bronze */
+  const C_TXT='#1c1f26', C_MUTE='#6d717c', C_GRID='#e3ddcf';
+  const C_TEAL='#2c5560', C_TEAL_DEEP='#1f4651';
+  const C_FOREST='#446a4d', C_BRONZE='#8a5a35';
+  const C_DOT='#c0b8a4';
+
+  Chart.defaults.color=C_MUTE;
+  Chart.defaults.borderColor=C_GRID;
+  Chart.defaults.font.family='Inter, sans-serif';
+  Chart.defaults.font.size=12;
+
+  const labels=['seq (1)','mpi (1)','mpi (2)','mpi (4)','mpi (8)'];
+  const best=[3.176,1.006,0.609,0.711,0.886];
+  const median=[3.637,1.200,1.279,1.177,1.477];
+  const mean=[3.685,1.220,1.257,1.133,1.446];
+
+  new Chart(document.getElementById('timeChart'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'best',data:best,backgroundColor:C_TEAL,borderRadius:3,barPercentage:.78,categoryPercentage:.72},
+      {label:'median',data:median,backgroundColor:C_FOREST,borderRadius:3,barPercentage:.78,categoryPercentage:.72},
+      {label:'mean',data:mean,backgroundColor:C_BRONZE,borderRadius:3,barPercentage:.78,categoryPercentage:.72}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',align:'end',
+        labels:{boxWidth:10,boxHeight:10,color:C_TXT,font:{size:12,weight:'500'},padding:14}}},
+      scales:{
+        y:{beginAtZero:true,title:{display:true,text:'milliseconds',color:C_MUTE,font:{size:11}},
+           grid:{color:C_GRID,drawTicks:false},ticks:{color:C_MUTE}},
+        x:{grid:{display:false},ticks:{color:C_TXT,font:{size:12,weight:'500'}}}
+      }
+    }
+  });
+
+  const speedLabels=['seq','mpi n=1','mpi n=2','mpi n=4','mpi n=8'];
+  const speedObs=[1.00,3.16,5.22,4.47,3.58];
+  const speedIdeal=[1,1,2,4,8];
+
+  new Chart(document.getElementById('speedChart'),{
+    type:'line',
+    data:{labels:speedLabels,datasets:[
+      {label:'observed',data:speedObs,
+       borderColor:C_TEAL,backgroundColor:'rgba(44,85,96,.12)',
+       tension:.28,fill:true,pointRadius:5,pointBackgroundColor:C_TEAL,
+       pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5},
+      {label:'ideal linear',data:speedIdeal,
+       borderColor:C_DOT,borderDash:[5,5],backgroundColor:'transparent',
+       tension:0,fill:false,pointRadius:3,pointBackgroundColor:C_DOT,borderWidth:1.5}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',align:'end',
+        labels:{boxWidth:10,boxHeight:10,color:C_TXT,font:{size:12,weight:'500'},padding:14}}},
+      scales:{
+        y:{beginAtZero:true,title:{display:true,text:'× over sequential',color:C_MUTE,font:{size:11}},
+           grid:{color:C_GRID,drawTicks:false},ticks:{color:C_MUTE}},
+        x:{grid:{display:false},ticks:{color:C_TXT,font:{size:12,weight:'500'}}}
+      }
+    }
+  });
+
+  /* Sidebar: highlight current section on scroll */
+  const sections=document.querySelectorAll('section[id]');
+  const links=document.querySelectorAll('#sidenav a');
+  const linkMap=new Map();
+  links.forEach(a=>linkMap.set(a.getAttribute('href').slice(1),a));
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(a=>a.classList.remove('active'));
+        const a=linkMap.get(e.target.id);
+        if(a) a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-40% 0px -55% 0px',threshold:0});
+  sections.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
