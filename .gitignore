@@ -1,0 +1,11 @@
+bin/
+data/data.bin
+data/data.meta.txt
+data/household_power_consumption.zip
+data/household_power_consumption.txt
+results.csv
+*.exe
+*.o
+*.obj
+__pycache__/
+docs/
