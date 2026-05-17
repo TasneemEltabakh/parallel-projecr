@@ -1,5 +1,7 @@
 # PDC Project
 
+**Team:** Aser Osama (202101266) · Tasneem Muhammed (202101031) · Marwan Ahmed (202101214) · Rghda Salah (202101510) · Mohamed Magdy (202101520)
+
 Two-phase project on the UCI Household Power Consumption dataset (~2M rows).
 
 | Phase | Stack | Status | Folder |
