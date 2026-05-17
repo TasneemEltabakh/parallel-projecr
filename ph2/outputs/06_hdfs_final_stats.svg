@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 200" font-family="JetBrains Mono, Consolas, monospace" font-size="13">
+  <defs>
+    <linearGradient id="bar" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#3a3f4b"/>
+      <stop offset="1" stop-color="#2a2f3a"/>
+    </linearGradient>
+    <filter id="sh" x="-2%" y="-2%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="880" height="200" fill="#f5f3ed"/>
+  <g filter="url(#sh)">
+    <rect x="20" y="20" width="840" height="160" rx="9" fill="#1c2329"/>
+    <rect x="20" y="20" width="840" height="32" rx="9" fill="url(#bar)"/>
+    <circle cx="40" cy="36" r="6" fill="#ff5f57"/>
+    <circle cx="60" cy="36" r="6" fill="#febc2e"/>
+    <circle cx="80" cy="36" r="6" fill="#28c840"/>
+    <text x="440" y="40" fill="#cbd2dc" font-size="11" text-anchor="middle">hdfs dfs -cat /output/final/stats.txt</text>
+  </g>
+  <g fill="#d4d8df">
+    <text x="40" y="80"><tspan fill="#7eb3c4">$</tspan> <tspan fill="#d4d8df">docker exec -u hadoop hadoop-pseudo hdfs dfs -cat /output/final/stats.txt</tspan></text>
+    <text x="40" y="112"><tspan fill="#9bb88a">n</tspan>=<tspan fill="#d6a06b">2049280</tspan> <tspan fill="#9bb88a">avg</tspan>=<tspan fill="#d6a06b">1.091615037</tspan> <tspan fill="#9bb88a">min</tspan>=<tspan fill="#d6a06b">0.076000000</tspan> <tspan fill="#9bb88a">max</tspan>=<tspan fill="#d6a06b">11.122000000</tspan></text>
+    <text x="40" y="132" fill="#7a8492">reduces=8 elapsed_ms=26384.745</text>
+    <text x="40" y="166"><tspan fill="#7eb3c4">$</tspan> <tspan fill="#cbd2dc">_</tspan></text>
+  </g>
+</svg>

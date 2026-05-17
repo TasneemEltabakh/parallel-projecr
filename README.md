@@ -5,9 +5,14 @@ Two-phase project on the UCI Household Power Consumption dataset (~2M rows).
 | Phase | Stack | Status | Folder |
 |-------|-------|--------|--------|
 | 1 | C + MPI (sequential vs parallel) | Done | [`ph1/`](ph1/) |
-| 2 | Hadoop MapReduce | In progress | `ph2/` |
+| 2 | Hadoop MapReduce (Java, pseudo-distributed in Docker) | Done | [`ph2/`](ph2/) |
 
-The dataset lives once at [`data/`](data/) and is shared by both phases —
-run `python3 data/prep.py` to download and prepare it.
+The dataset lives once at [`data/`](data/) and is shared by both phases.
+Run `python3 data/prep.py` to download and prepare it — it writes both
+`data/data.bin` (Phase 1, flat float64) and `data/data.txt` (Phase 2, one
+float per line, HDFS-friendly).
+
+Each phase has its own README with setup, build, and run instructions.
+The headline benchmark tables are in `ph1/results.csv` and `ph2/results.csv`.
 
 Requirements for both phases are in [`requirement.md`](requirement.md).

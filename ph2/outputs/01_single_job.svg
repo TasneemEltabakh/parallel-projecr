@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 360" font-family="JetBrains Mono, Consolas, monospace" font-size="13">
+  <defs>
+    <linearGradient id="bar" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#3a3f4b"/>
+      <stop offset="1" stop-color="#2a2f3a"/>
+    </linearGradient>
+    <filter id="sh" x="-2%" y="-2%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="880" height="360" fill="#f5f3ed"/>
+  <g filter="url(#sh)">
+    <rect x="20" y="20" width="840" height="320" rx="9" fill="#1c2329"/>
+    <rect x="20" y="20" width="840" height="32" rx="9" fill="url(#bar)"/>
+    <circle cx="40" cy="36" r="6" fill="#ff5f57"/>
+    <circle cx="60" cy="36" r="6" fill="#febc2e"/>
+    <circle cx="80" cy="36" r="6" fill="#28c840"/>
+    <text x="440" y="40" fill="#cbd2dc" font-size="11" text-anchor="middle">hadoop jar phase2-mr.jar — single MR job, --reduces 4</text>
+  </g>
+  <g fill="#d4d8df">
+    <text x="40" y="80"><tspan fill="#7eb3c4">$</tspan> <tspan fill="#d4d8df">docker exec -u hadoop hadoop-pseudo \</tspan></text>
+    <text x="40" y="98"><tspan fill="#d4d8df">    hadoop jar bin/phase2-mr.jar com.pdc.Driver \</tspan></text>
+    <text x="40" y="116"><tspan fill="#d4d8df">    --input /input/data.txt --output /output/run --reduces 4</tspan></text>
+    <text x="40" y="146"><tspan fill="#7a8492">INFO Job:</tspan>  <tspan fill="#cbd2dc">map   0% reduce   0%</tspan></text>
+    <text x="40" y="166"><tspan fill="#7a8492">INFO Job:</tspan>  <tspan fill="#cbd2dc">map 100% reduce   0%</tspan></text>
+    <text x="40" y="186"><tspan fill="#7a8492">INFO Job:</tspan>  <tspan fill="#cbd2dc">map 100% reduce  25%</tspan></text>
+    <text x="40" y="206"><tspan fill="#7a8492">INFO Job:</tspan>  <tspan fill="#cbd2dc">map 100% reduce  75%</tspan></text>
+    <text x="40" y="226"><tspan fill="#7a8492">INFO Job:</tspan>  <tspan fill="#cbd2dc">map 100% reduce 100%</tspan></text>
+    <text x="40" y="246"><tspan fill="#9bb88a">INFO Job:</tspan>  <tspan fill="#9bb88a">Job job_..._0074 completed successfully</tspan></text>
+    <text x="40" y="276"><tspan fill="#7a8492">[mr]</tspan> input=/input/data.txt reduces=<tspan fill="#d6a06b">4</tspan></text>
+    <text x="40" y="296"><tspan fill="#7a8492">[mr]</tspan> n=<tspan fill="#d6a06b">2049280</tspan>  avg=<tspan fill="#9bb88a">1.091615037</tspan>  min=<tspan fill="#9bb88a">0.076000000</tspan>  max=<tspan fill="#9bb88a">11.122000000</tspan></text>
+    <text x="40" y="316"><tspan fill="#7a8492">[mr]</tspan> elapsed_ms=<tspan fill="#d6a06b">22367.060</tspan>  <tspan fill="#7a8492">(✓ matches NumPy reference)</tspan></text>
+    <text x="40" y="334"><tspan fill="#7a8492">[mr]</tspan> wrote final stats to hdfs:///output/final/stats.txt</text>
+  </g>
+</svg>

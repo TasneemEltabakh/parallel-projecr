@@ -1,12 +1,16 @@
 ph1/bin/
+ph2/bin/
+ph2/.hadoop-jars/
 bin/
 data/data.bin
+data/data.txt
 data/data.meta.txt
 data/household_power_consumption.zip
 data/household_power_consumption.txt
 *.exe
 *.o
 *.obj
+*.class
 __pycache__/
 docs/
 

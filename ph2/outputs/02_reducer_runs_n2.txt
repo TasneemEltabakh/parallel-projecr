@@ -1,0 +1,9 @@
+2026-05-17 06:40:44 INFO  Job:1755 -  map 0% reduce 0%
+2026-05-17 06:40:50 INFO  Job:1755 -  map 100% reduce 0%
+2026-05-17 06:40:54 INFO  Job:1755 -  map 100% reduce 50%
+2026-05-17 06:40:55 INFO  Job:1755 -  map 100% reduce 100%
+2026-05-17 06:40:56 INFO  Job:1766 - Job job_1778998198358_0073 completed successfully
+[mr] input=/input/data.txt reduces=2
+[mr] n=2049280  avg=1.091615037  min=0.076000000  max=11.122000000
+[mr] elapsed_ms=20954.544
+[mr] wrote final stats to hdfs:///output/final/stats.txt

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 320" font-family="JetBrains Mono, Consolas, monospace" font-size="13">
+  <defs>
+    <linearGradient id="bar" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#3a3f4b"/>
+      <stop offset="1" stop-color="#2a2f3a"/>
+    </linearGradient>
+    <filter id="sh" x="-2%" y="-2%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="880" height="320" fill="#f5f3ed"/>
+  <g filter="url(#sh)">
+    <rect x="20" y="20" width="840" height="280" rx="9" fill="#1c2329"/>
+    <rect x="20" y="20" width="840" height="32" rx="9" fill="url(#bar)"/>
+    <circle cx="40" cy="36" r="6" fill="#ff5f57"/>
+    <circle cx="60" cy="36" r="6" fill="#febc2e"/>
+    <circle cx="80" cy="36" r="6" fill="#28c840"/>
+    <text x="440" y="40" fill="#cbd2dc" font-size="11" text-anchor="middle">data.meta.txt — bash</text>
+  </g>
+  <g fill="#d4d8df">
+    <text x="40" y="80"><tspan fill="#7eb3c4">$</tspan> <tspan fill="#d4d8df">cat ../data/data.meta.txt</tspan></text>
+    <text x="40" y="108"><tspan fill="#9bb88a">n</tspan>=<tspan fill="#d6a06b">2049280</tspan></text>
+    <text x="40" y="128"><tspan fill="#9bb88a">dtype</tspan>=<tspan fill="#cbd2dc">float64</tspan></text>
+    <text x="40" y="148"><tspan fill="#9bb88a">column</tspan>=<tspan fill="#cbd2dc">Global_active_power</tspan></text>
+    <text x="40" y="168"><tspan fill="#9bb88a">source</tspan>=<tspan fill="#7a8492">https://archive.ics.uci.edu/.../household_power_consumption.zip</tspan></text>
+    <text x="40" y="196"><tspan fill="#9bb88a">sum</tspan>=<tspan fill="#d6a06b">2237024.862000</tspan></text>
+    <text x="40" y="216"><tspan fill="#9bb88a">min</tspan>=<tspan fill="#d6a06b">0.076000</tspan></text>
+    <text x="40" y="236"><tspan fill="#9bb88a">max</tspan>=<tspan fill="#d6a06b">11.122000</tspan></text>
+    <text x="40" y="256"><tspan fill="#9bb88a">mean</tspan>=<tspan fill="#d6a06b">1.091615</tspan></text>
+    <text x="40" y="290"><tspan fill="#7eb3c4">$</tspan> <tspan fill="#cbd2dc">_</tspan></text>
+  </g>
+</svg>

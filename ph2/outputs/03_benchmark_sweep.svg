@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 360" font-family="JetBrains Mono, Consolas, monospace" font-size="13">
+  <defs>
+    <linearGradient id="bar" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#3a3f4b"/>
+      <stop offset="1" stop-color="#2a2f3a"/>
+    </linearGradient>
+    <filter id="sh" x="-2%" y="-2%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="880" height="360" fill="#f5f3ed"/>
+  <g filter="url(#sh)">
+    <rect x="20" y="20" width="840" height="320" rx="9" fill="#1c2329"/>
+    <rect x="20" y="20" width="840" height="32" rx="9" fill="url(#bar)"/>
+    <circle cx="40" cy="36" r="6" fill="#ff5f57"/>
+    <circle cx="60" cy="36" r="6" fill="#febc2e"/>
+    <circle cx="80" cy="36" r="6" fill="#28c840"/>
+    <text x="440" y="40" fill="#cbd2dc" font-size="11" text-anchor="middle">./bench/benchmark.sh — 15 reps × 4 reducer counts</text>
+  </g>
+  <g fill="#d4d8df">
+    <text x="40" y="78"><tspan fill="#7eb3c4">$</tspan> <tspan fill="#d4d8df">./bench/benchmark.sh</tspan></text>
+    <text x="40" y="106"><tspan fill="#cbd2dc">hadoop -reduces 1...</tspan></text>
+    <text x="40" y="124"><tspan fill="#7a8492">  -&gt;</tspan> best=<tspan fill="#9bb88a">19336</tspan> median=<tspan fill="#d6a06b">20152</tspan> mean=<tspan fill="#d6a06b">19870</tspan> ms  speedup=<tspan fill="#9bb88a">1.00×</tspan></text>
+    <text x="40" y="148"><tspan fill="#cbd2dc">hadoop -reduces 2...</tspan></text>
+    <text x="40" y="166"><tspan fill="#7a8492">  -&gt;</tspan> best=<tspan fill="#d6a06b">20299</tspan> median=<tspan fill="#d6a06b">21323</tspan> mean=<tspan fill="#d6a06b">20937</tspan> ms  speedup=<tspan fill="#c08e5b">0.95×</tspan></text>
+    <text x="40" y="190"><tspan fill="#cbd2dc">hadoop -reduces 4...</tspan></text>
+    <text x="40" y="208"><tspan fill="#7a8492">  -&gt;</tspan> best=<tspan fill="#d6a06b">22013</tspan> median=<tspan fill="#d6a06b">23315</tspan> mean=<tspan fill="#d6a06b">22932</tspan> ms  speedup=<tspan fill="#c08e5b">0.88×</tspan></text>
+    <text x="40" y="232"><tspan fill="#cbd2dc">hadoop -reduces 8...</tspan></text>
+    <text x="40" y="250"><tspan fill="#7a8492">  -&gt;</tspan> best=<tspan fill="#d6a06b">25347</tspan> median=<tspan fill="#d6a06b">27330</tspan> mean=<tspan fill="#d6a06b">26860</tspan> ms  speedup=<tspan fill="#c08e5b">0.76×</tspan></text>
+
+    <text x="40" y="288" fill="#9bb88a">wrote results.csv  (4 hadoop rows + phase-1 reference + uber/local variants)</text>
+    <text x="40" y="324"><tspan fill="#7eb3c4">$</tspan> <tspan fill="#cbd2dc">_</tspan></text>
+  </g>
+</svg>

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Outputs — PDC Phase 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f3ed; --panel:#ffffff; --panel-tint:#faf8f3;
+    --text:#1c1f26; --text-soft:#3f444f; --muted:#6d717c;
+    --border:#e3ddcf;
+    --teal:#2c5560; --teal-deep:#1f4651; --teal-soft:#e1ebed; --teal-hair:#bcd1d4;
+    --forest:#446a4d; --forest-soft:#e6ede4;
+    --bronze:#8a5a35; --bronze-soft:#f0e6d6;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+    --shadow:0 1px 3px rgba(40,30,15,.04), 0 4px 12px rgba(40,30,15,.03);
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 28px 80px}
+  a{color:var(--teal);text-decoration:none}
+  a:hover{color:var(--teal-deep)}
+
+  .head{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:28px 32px;box-shadow:var(--shadow);margin-bottom:24px}
+  .head .eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--teal);
+    padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border);display:inline-block}
+  .head h1{font-size:26px;font-weight:700;letter-spacing:-.015em;margin:0 0 8px}
+  .head p{margin:0;color:var(--text-soft);font-size:14.5px;max-width:680px}
+  .head .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
+  .pill{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:4px;
+    background:var(--panel-tint);border:1px solid var(--border);color:var(--text-soft)}
+  .pill.t{background:var(--teal-soft);color:var(--teal-deep);border-color:var(--teal-hair)}
+
+  h2{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--muted);margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+
+  .item{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    overflow:hidden;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+  .item:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(40,30,15,.08)}
+  .item .frame{background:var(--panel-tint);border-bottom:1px solid var(--border);
+    padding:14px;display:flex;align-items:center;justify-content:center;min-height:260px}
+  .item .frame img,.item .frame object{max-width:100%;height:auto;display:block}
+  .item .meta{padding:14px 18px}
+  .item .ix{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em;margin-bottom:4px}
+  .item h3{margin:0 0 4px;font-size:14.5px;font-weight:600;color:var(--text);letter-spacing:-.005em}
+  .item .ds{font-size:13px;color:var(--text-soft);line-height:1.5;margin:6px 0 10px}
+  .item .links{display:flex;gap:8px;flex-wrap:wrap}
+  .item .links a{font-size:12px;padding:4px 9px;border-radius:4px;background:var(--panel-tint);
+    border:1px solid var(--border);color:var(--text-soft);font-family:var(--mono)}
+  .item .links a:hover{background:var(--teal-soft);color:var(--teal-deep);border-color:var(--teal-hair)}
+
+  .files{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden}
+  .files table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .files th{font-size:10.5px;font-weight:600;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.1em;padding:11px 18px;text-align:left;
+    background:var(--panel-tint);border-bottom:1px solid var(--border)}
+  .files td{padding:11px 18px;border-bottom:1px solid var(--border);color:var(--text-soft)}
+  .files tr:last-child td{border-bottom:none}
+  .files tr:hover{background:var(--panel-tint)}
+  .files td.f{font-family:var(--mono);font-size:12.5px;color:var(--teal-deep)}
+  .files td.t{color:var(--text)}
+  .files td.s{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right}
+
+  footer{margin-top:36px;padding:16px 22px;background:var(--panel);
+    border:1px solid var(--border);border-radius:var(--radius);
+    font-size:12px;color:var(--muted);box-shadow:var(--shadow);text-align:center}
+  footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <span class="eyebrow">Outputs · PDC Phase 2</span>
+    <h1>Program outputs &amp; benchmark artifacts</h1>
+    <p>Captured terminal output from the Hadoop MapReduce job at <code>--reduces 1, 2, 4, 8</code>, the full benchmark sweep, the resulting <code>results.csv</code>, the NumPy reference used for correctness checking, and the final stats persisted back into HDFS.</p>
+    <div class="meta">
+      <span class="pill t">6 SVG screenshots</span>
+      <span class="pill">7 raw text captures</span>
+      <span class="pill">1 results CSV</span>
+      <span class="pill"><a href="../report.html" style="color:inherit">↩ back to report.html</a></span>
+    </div>
+  </div>
+
+  <h2>Screenshots</h2>
+  <div class="grid">
+
+    <div class="item">
+      <div class="frame"><object data="01_single_job.svg" type="image/svg+xml" style="max-height:240px"></object></div>
+      <div class="meta">
+        <div class="ix">SCREENSHOT 01</div>
+        <h3>Single MR job — <code>--reduces 4</code></h3>
+        <div class="ds">One end-to-end run of <code>hadoop jar phase2-mr.jar com.pdc.Driver</code>. Map → combiner → shuffle → reduce → client-side merge → HDFS write. Final stats line matches the NumPy reference.</div>
+        <div class="links">
+          <a href="01_single_job.svg">SVG</a>
+          <a href="01_single_job.txt">raw .txt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="frame"><object data="02_reducer_runs.svg" type="image/svg+xml" style="max-height:240px"></object></div>
+      <div class="meta">
+        <div class="ix">SCREENSHOT 02</div>
+        <h3>Reducer sweep — N = 1, 2, 4, 8</h3>
+        <div class="ds">All four reducer-count launches stacked. Every configuration prints the same avg / min / max (correctness check), with <code>elapsed_ms</code> varying by reducer count.</div>
+        <div class="links">
+          <a href="02_reducer_runs.svg">SVG</a>
+          <a href="02_reducer_runs_n1.txt">n=1</a>
+          <a href="02_reducer_runs_n2.txt">n=2</a>
+          <a href="02_reducer_runs_n4.txt">n=4</a>
+          <a href="02_reducer_runs_n8.txt">n=8</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="frame"><object data="03_benchmark_sweep.svg" type="image/svg+xml" style="max-height:240px"></object></div>
+      <div class="meta">
+        <div class="ix">SCREENSHOT 03</div>
+        <h3>Full benchmark sweep</h3>
+        <div class="ds">Output of <code>bench/benchmark.sh</code>: best/median/mean of 15 timed iterations per configuration, plus the cross-stack reference rows from Phase 1's <code>results.csv</code>.</div>
+        <div class="links">
+          <a href="03_benchmark_sweep.svg">SVG</a>
+          <a href="03_benchmark_sweep.txt">raw .txt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="frame"><object data="04_results_csv.svg" type="image/svg+xml" style="max-height:240px"></object></div>
+      <div class="meta">
+        <div class="ix">SCREENSHOT 04</div>
+        <h3>results.csv — rendered</h3>
+        <div class="ds">Final benchmark table from <code>results.csv</code>, with the four Hadoop rows on top and the Phase 1 reference rows (sequential, best MPI) below.</div>
+        <div class="links">
+          <a href="04_results_csv.svg">SVG</a>
+          <a href="../results.csv">raw .csv</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="frame"><object data="05_numpy_reference.svg" type="image/svg+xml" style="max-height:240px"></object></div>
+      <div class="meta">
+        <div class="ix">SCREENSHOT 05</div>
+        <h3>NumPy reference values</h3>
+        <div class="ds">Contents of <code>../data/data.meta.txt</code>: row count, dtype, source URL, and the reference sum / min / max / mean every MR run is checked against.</div>
+        <div class="links">
+          <a href="05_numpy_reference.svg">SVG</a>
+          <a href="05_numpy_reference.txt">raw .txt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="frame"><object data="06_hdfs_final_stats.svg" type="image/svg+xml" style="max-height:240px"></object></div>
+      <div class="meta">
+        <div class="ix">SCREENSHOT 06</div>
+        <h3>HDFS final result</h3>
+        <div class="ds"><code>hdfs dfs -cat /output/final/stats.txt</code> — proves the "generate the final result in HDFS" requirement: a single-line aggregated summary persisted back into the distributed filesystem.</div>
+        <div class="links">
+          <a href="06_hdfs_final_stats.svg">SVG</a>
+          <a href="06_hdfs_final_stats.txt">raw .txt</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>All files in this folder</h2>
+  <div class="files">
+    <table>
+      <thead><tr><th>File</th><th>Type</th><th>What it contains</th><th style="text-align:right">Size</th></tr></thead>
+      <tbody>
+        <tr><td class="f"><a href="01_single_job.svg">01_single_job.svg</a></td><td class="t">SVG screenshot</td><td>Single MR job at --reduces 4</td><td class="s">~ 3 KB</td></tr>
+        <tr><td class="f"><a href="01_single_job.txt">01_single_job.txt</a></td><td class="t">stdout capture</td><td>One end-to-end MR job (driver + counters)</td><td class="s">~ 1 KB</td></tr>
+        <tr><td class="f"><a href="02_reducer_runs.svg">02_reducer_runs.svg</a></td><td class="t">SVG screenshot</td><td>All four reducer-count runs stacked</td><td class="s">~ 3 KB</td></tr>
+        <tr><td class="f"><a href="02_reducer_runs_n1.txt">02_reducer_runs_n1.txt</a></td><td class="t">stdout capture</td><td>--reduces 1</td><td class="s">~ 300 B</td></tr>
+        <tr><td class="f"><a href="02_reducer_runs_n2.txt">02_reducer_runs_n2.txt</a></td><td class="t">stdout capture</td><td>--reduces 2</td><td class="s">~ 300 B</td></tr>
+        <tr><td class="f"><a href="02_reducer_runs_n4.txt">02_reducer_runs_n4.txt</a></td><td class="t">stdout capture</td><td>--reduces 4</td><td class="s">~ 300 B</td></tr>
+        <tr><td class="f"><a href="02_reducer_runs_n8.txt">02_reducer_runs_n8.txt</a></td><td class="t">stdout capture</td><td>--reduces 8</td><td class="s">~ 300 B</td></tr>
+        <tr><td class="f"><a href="03_benchmark_sweep.svg">03_benchmark_sweep.svg</a></td><td class="t">SVG screenshot</td><td>Full benchmark sweep output</td><td class="s">~ 3 KB</td></tr>
+        <tr><td class="f"><a href="03_benchmark_sweep.txt">03_benchmark_sweep.txt</a></td><td class="t">stdout capture</td><td>Real <code>benchmark.sh</code> run</td><td class="s">~ 4 KB</td></tr>
+        <tr><td class="f"><a href="04_results_csv.svg">04_results_csv.svg</a></td><td class="t">SVG screenshot</td><td>results.csv rendered as a clean table</td><td class="s">~ 4 KB</td></tr>
+        <tr><td class="f"><a href="05_numpy_reference.txt">05_numpy_reference.txt</a></td><td class="t">text</td><td>NumPy reference values (data.meta.txt)</td><td class="s">~ 250 B</td></tr>
+        <tr><td class="f"><a href="05_numpy_reference.svg">05_numpy_reference.svg</a></td><td class="t">SVG screenshot</td><td>data.meta.txt rendered as terminal</td><td class="s">~ 2 KB</td></tr>
+        <tr><td class="f"><a href="06_hdfs_final_stats.txt">06_hdfs_final_stats.txt</a></td><td class="t">stdout capture</td><td><code>hdfs dfs -cat /output/final/stats.txt</code></td><td class="s">~ 100 B</td></tr>
+        <tr><td class="f"><a href="06_hdfs_final_stats.svg">06_hdfs_final_stats.svg</a></td><td class="t">SVG screenshot</td><td>Final stats read back from HDFS</td><td class="s">~ 2 KB</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    PDC Phase 2 · all outputs reproducible via <code>./bench/benchmark.sh</code> · 2026-05-17 · <a href="../report.html">return to report</a>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+n=2049280
+dtype=float64
+column=Global_active_power
+source=https://archive.ics.uci.edu/ml/machine-learning-databases/00235/household_power_consumption.zip
+sum=2237024.862000
+min=0.076000
+max=11.122000
+mean=1.091615

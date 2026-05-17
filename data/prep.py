@@ -18,6 +18,7 @@ HERE = Path(__file__).resolve().parent
 ZIP  = HERE / "household_power_consumption.zip"
 CSV  = HERE / "household_power_consumption.txt"
 BIN  = HERE / "data.bin"
+TXT  = HERE / "data.txt"   # ph2 (Hadoop) input: one float per line
 META = HERE / "data.meta.txt"
 
 
@@ -44,6 +45,14 @@ def build():
     arr = s.to_numpy(dtype=np.float64, copy=False)
     arr.tofile(BIN)
     print(f"[prep] wrote {BIN.name} ({BIN.stat().st_size / 1e6:.1f} MB)")
+
+    # ph2 also wants a text form: one float per line, no header.
+    # Skip if up-to-date with the CSV.
+    if TXT.exists() and TXT.stat().st_mtime >= CSV.stat().st_mtime:
+        print(f"[prep] {TXT.name} up-to-date, skipping")
+    else:
+        np.savetxt(TXT, arr, fmt="%.3f")
+        print(f"[prep] wrote {TXT.name} ({TXT.stat().st_size / 1e6:.1f} MB)")
 
     # reference values so we can sanity-check the C output
     META.write_text(
