@@ -100,23 +100,58 @@ Project/
 
 ## Setup (one time)
 
+### Windows
+
 1. **MS-MPI runtime + SDK** — `winget install Microsoft.msmpi` and
    `winget install Microsoft.msmpisdk`. Verify with `mpiexec -help`.
 2. **gcc** via MSYS2 — `winget install MSYS2.MSYS2`, then in the MSYS2 shell
    `pacman -S mingw-w64-x86_64-gcc`, then add `C:\msys64\mingw64\bin` to `PATH`.
 3. **Python deps for the prep script** — `pip install pandas numpy`.
 
+### Linux
+
+1. **OpenMPI** — Fedora: `sudo dnf install openmpi openmpi-devel`.
+   Debian/Ubuntu: `sudo apt install openmpi-bin libopenmpi-dev`. Arch: `sudo pacman -S openmpi`.
+2. **gcc + make** — already there on most distros; if not:
+   Fedora `sudo dnf install gcc make`, Debian `sudo apt install build-essential`.
+3. **Put MPI on PATH** — on Fedora the OpenMPI binaries live under
+   `/usr/lib64/openmpi/bin`, so load the module each shell:
+   `module load mpi/openmpi-x86_64` (Debian/Arch put `mpicc`/`mpiexec` on PATH already).
+4. **Python deps** — `pip install pandas numpy` (or `sudo dnf install python3-pandas python3-numpy`).
+
+### macOS
+
+1. **OpenMPI** — `brew install open-mpi`.
+2. **Python deps** — `pip3 install pandas numpy`.
+
 ---
 
 ## Running it
 
+### Windows (PowerShell)
+
 ```powershell
-python data\prep.py                                       # ~30s, downloads + writes data.bin
-.\src\build.ps1                                            # compiles both .exe into bin\
-.\bin\sequential.exe .\data\data.bin                       # sequential baseline
-mpiexec -n 4 .\bin\parallel_mpi.exe .\data\data.bin        # 4-process MPI run
-.\bench\benchmark.ps1                                      # full sweep, writes results.csv
+python data\prep.py                                  # ~30s, downloads + writes data.bin
+.\src\build.ps1                                       # compiles both .exe into bin\
+.\bin\sequential.exe .\data\data.bin                  # sequential baseline
+mpiexec -n 4 .\bin\parallel_mpi.exe .\data\data.bin   # 4-process MPI run
+.\bench\benchmark.ps1                                 # full sweep, writes results.csv
 ```
+
+### Linux / macOS
+
+```bash
+module load mpi/openmpi-x86_64                # Fedora only; skip on Debian/Arch/macOS
+python3 data/prep.py                          # ~30s, downloads + writes data.bin
+make                                          # builds bin/sequential + bin/parallel_mpi
+./bin/sequential data/data.bin                # sequential baseline
+mpiexec -n 4 ./bin/parallel_mpi data/data.bin # 4-process MPI run
+./bench/benchmark.sh                          # full sweep, writes results.csv
+```
+
+If you ask for more MPI ranks than physical cores, OpenMPI refuses by default;
+`benchmark.sh` passes `--oversubscribe` automatically. For ad-hoc runs add it
+yourself: `mpiexec --oversubscribe -n 8 ./bin/parallel_mpi data/data.bin`.
 
 ---
 

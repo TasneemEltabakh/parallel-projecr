@@ -68,7 +68,9 @@ int main(int argc, char **argv)
     // warm cache (mirrors what sequential.c does so timing is fair)
     double warm = 0.0;
     for (int i = 0; i < my_n; i++) warm += buf[i];
-    if (warm == 0.0) { /* don't let the compiler delete this */ }
+    static volatile double sink;
+    sink = warm;
+    (void)sink;
 
     MPI_Barrier(MPI_COMM_WORLD);
     double t0 = MPI_Wtime();
