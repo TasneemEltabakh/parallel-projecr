@@ -39,6 +39,11 @@ sweep() {
     for ((i = 0; i < REPEATS; i++)); do
         local t
         t="$(run_one "$n")"
+        if [[ -z "$t" ]]; then
+            echo "no elapsed_ms in MR output (reducers=$n)" >&2
+            echo "  (container down? jar broken? check 'make logs')" >&2
+            exit 1
+        fi
         printf "  [%2d/%d] %s ms\n" $((i+1)) "$REPEATS" "$t" >&2
         times+=("$t")
     done

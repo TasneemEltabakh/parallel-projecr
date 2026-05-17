@@ -17,6 +17,15 @@ for f in "$SEQ" "$MPI" "$DATA"; do
     [[ -f "$f" ]] || { echo "missing: $f" >&2; exit 1; }
 done
 
+# mpiexec must be on PATH; otherwise every MPI run produces no elapsed_ms
+# line and the sweep collapses into a div-by-zero on speedup.
+if ! command -v mpiexec >/dev/null 2>&1; then
+    echo "mpiexec not found on PATH." >&2
+    echo "Fedora: source /etc/profile.d/modules.sh && module load mpi/openmpi-x86_64" >&2
+    echo "  or:   export PATH=/usr/lib64/openmpi/bin:\$PATH" >&2
+    exit 1
+fi
+
 # Parse "elapsed_ms=NNN.NNN" from program output.
 parse_ms() {
     awk -F'=' '/elapsed_ms=/ { print $2; exit }'
@@ -30,6 +39,11 @@ sweep() {
     for ((i = 0; i < REPEATS; i++)); do
         local t
         t="$("$@" | parse_ms)"
+        if [[ -z "$t" ]]; then
+            echo "no elapsed_ms in output of: $*" >&2
+            echo "  (binary failed, or mpiexec refused to launch)" >&2
+            exit 1
+        fi
         times+=("$t")
     done
 

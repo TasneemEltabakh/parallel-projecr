@@ -117,8 +117,15 @@ Project/
 2. **gcc + make** — already there on most distros; if not:
    Fedora `sudo dnf install gcc make`, Debian `sudo apt install build-essential`.
 3. **Put MPI on PATH** — on Fedora the OpenMPI binaries live under
-   `/usr/lib64/openmpi/bin`, so load the module each shell:
-   `module load mpi/openmpi-x86_64` (Debian/Arch put `mpicc`/`mpiexec` on PATH already).
+   `/usr/lib64/openmpi/bin` and aren't on PATH by default. Two ways to fix
+   it (per shell session):
+   - via environment-modules:
+     `source /etc/profile.d/modules.sh && module load mpi/openmpi-x86_64`
+   - or just prepend to PATH directly (simpler, no modules needed):
+     `export PATH=/usr/lib64/openmpi/bin:$PATH`
+
+   Verify with `which mpiexec`. Debian/Arch put `mpicc`/`mpiexec` on PATH
+   automatically — no setup needed.
 4. **Python deps** — `pip install pandas numpy` (or `sudo dnf install python3-pandas python3-numpy`).
 
 ### macOS
@@ -146,7 +153,9 @@ mpiexec -n 4 .\bin\parallel_mpi.exe ..\data\data.bin     # 4-process MPI run
 ### Linux / macOS
 
 ```bash
-module load mpi/openmpi-x86_64                       # Fedora only; skip on Debian/Arch/macOS
+# Fedora only (skip on Debian/Arch/macOS) — pick ONE:
+source /etc/profile.d/modules.sh && module load mpi/openmpi-x86_64
+# or:  export PATH=/usr/lib64/openmpi/bin:$PATH
 python3 ../data/prep.py                              # ~30s, downloads + writes ../data/data.bin
 make                                                 # builds bin/sequential + bin/parallel_mpi
 ./bin/sequential ../data/data.bin                    # sequential baseline
