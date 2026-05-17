@@ -1,3 +1,4 @@
+ph1/bin/
 bin/
 data/data.bin
 data/data.meta.txt
@@ -8,3 +9,6 @@ data/household_power_consumption.txt
 *.obj
 __pycache__/
 docs/
+
+# LibreOffice lock files
+.~lock.*#

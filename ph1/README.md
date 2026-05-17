@@ -76,24 +76,26 @@ three `MPI_Reduce` calls combine the partials at rank 0. The timed region is bou
 
 ```
 Project/
-├── data/
-│   ├── prep.py                  # downloads UCI archive, writes data.bin
-│   ├── data.bin                 # 16.4 MB float64 array (gitignored)
-│   └── data.meta.txt            # NumPy reference values
-├── src/
-│   ├── sequential.c             # single-process baseline
-│   ├── parallel_mpi.c           # MPI Scatterv + Reduce
-│   └── build.ps1                # gcc + MS-MPI linkage
-├── bench/
-│   └── benchmark.ps1            # N=1,2,4,8 · 15 timed runs each
-├── bin/
-│   ├── sequential.exe
-│   └── parallel_mpi.exe
-├── outputs/                     # real stdout captures + SVG screenshots
-│   └── index.html               # gallery
-├── results.csv                  # final benchmark table
-├── report.html                  # full report with charts and screenshots
-└── README.md
+├── data/                            # shared between ph1 and ph2
+│   ├── prep.py                      # downloads UCI archive, writes data.bin
+│   ├── data.bin                     # 16.4 MB float64 array (gitignored)
+│   └── data.meta.txt                # NumPy reference values
+├── ph1/                             # ← you are here
+│   ├── src/
+│   │   ├── sequential.c             # single-process baseline
+│   │   ├── parallel_mpi.c           # MPI Scatterv + Reduce
+│   │   └── build.ps1                # gcc + MS-MPI linkage (Windows)
+│   ├── bench/
+│   │   ├── benchmark.ps1            # Windows sweep
+│   │   └── benchmark.sh             # Linux/macOS sweep
+│   ├── bin/                         # built binaries (gitignored)
+│   ├── outputs/                     # real stdout captures + SVG screenshots
+│   ├── Makefile                     # gcc + mpicc build
+│   ├── results.csv                  # final benchmark table
+│   ├── report.html                  # full report with charts and screenshots
+│   └── README.md                    # this file
+├── ph2/                             # Hadoop MapReduce (in progress)
+└── requirement.md
 ```
 
 ---
@@ -128,25 +130,28 @@ Project/
 
 ## Running it
 
+Run everything from this `ph1/` directory. The dataset is one level up at
+`../data/data.bin` (shared with ph2).
+
 ### Windows (PowerShell)
 
 ```powershell
-python data\prep.py                                  # ~30s, downloads + writes data.bin
-.\src\build.ps1                                       # compiles both .exe into bin\
-.\bin\sequential.exe .\data\data.bin                  # sequential baseline
-mpiexec -n 4 .\bin\parallel_mpi.exe .\data\data.bin   # 4-process MPI run
-.\bench\benchmark.ps1                                 # full sweep, writes results.csv
+python ..\data\prep.py                                   # ~30s, downloads + writes ..\data\data.bin
+.\src\build.ps1                                          # compiles both .exe into bin\
+.\bin\sequential.exe ..\data\data.bin                    # sequential baseline
+mpiexec -n 4 .\bin\parallel_mpi.exe ..\data\data.bin     # 4-process MPI run
+.\bench\benchmark.ps1                                    # full sweep, writes results.csv
 ```
 
 ### Linux / macOS
 
 ```bash
-module load mpi/openmpi-x86_64                # Fedora only; skip on Debian/Arch/macOS
-python3 data/prep.py                          # ~30s, downloads + writes data.bin
-make                                          # builds bin/sequential + bin/parallel_mpi
-./bin/sequential data/data.bin                # sequential baseline
-mpiexec -n 4 ./bin/parallel_mpi data/data.bin # 4-process MPI run
-./bench/benchmark.sh                          # full sweep, writes results.csv
+module load mpi/openmpi-x86_64                       # Fedora only; skip on Debian/Arch/macOS
+python3 ../data/prep.py                              # ~30s, downloads + writes ../data/data.bin
+make                                                 # builds bin/sequential + bin/parallel_mpi
+./bin/sequential ../data/data.bin                    # sequential baseline
+mpiexec -n 4 ./bin/parallel_mpi ../data/data.bin     # 4-process MPI run
+./bench/benchmark.sh                                 # full sweep, writes results.csv
 ```
 
 If you ask for more MPI ranks than physical cores, OpenMPI refuses by default;

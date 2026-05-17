@@ -13,7 +13,7 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $seq  = Join-Path $root "bin\sequential.exe"
 $mpi  = Join-Path $root "bin\parallel_mpi.exe"
-if (-not $DataPath) { $DataPath = Join-Path $root "data\data.bin" }
+if (-not $DataPath) { $DataPath = Join-Path $root "..\data\data.bin" }
 
 foreach ($p in @($seq, $mpi, $DataPath)) {
     if (-not (Test-Path $p)) { throw "missing: $p" }

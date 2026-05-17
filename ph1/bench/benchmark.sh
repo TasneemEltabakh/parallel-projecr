@@ -8,7 +8,7 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 SEQ="$ROOT/bin/sequential"
 MPI="$ROOT/bin/parallel_mpi"
-DATA="${1:-$ROOT/data/data.bin}"
+DATA="${1:-$ROOT/../data/data.bin}"
 REPEATS="${REPEATS:-15}"
 PROCS=(${PROCS:-1 2 4 8})
 OUT="$ROOT/results.csv"

@@ -24,3 +24,34 @@ Students must implement a sequential C program that performs one basic operation
 
 ## 5. Performance Measurement
 - Compare sequential vs parallel performance. :contentReference[oaicite:5]{index=5}
+
+# Project Phase 2 – Hadoop Project
+
+The goal of this project is to implement a distributed data processing
+application using Hadoop MapReduce to process a large dataset
+efficiently.
+
+**1) Data Selection:**
+
+- Each team must select a Dataset
+- Dataset must contain at least one numeric column
+- Dataset size should be at least **1000 ,000 rows** ,
+
+**2) Hadoop MapReduce Implementation**
+
+must implement at least one basic operation on the numeric data
+using Hadoop MapReduce, such as:
+
+- Average
+- Maximum
+- Minimum
+
+**The Hadoop program should:**
+
+Read the dataset from HDFS.
+
+Use Mapper and Reducer classes.
+
+Generate the final result in HDFS.
+
+
