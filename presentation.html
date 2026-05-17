@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PDC Project — 5-min Presentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#0b0b0d;
+    --ink-soft:#2a2c33;
+    --muted:#6b6e76;
+    --line:#d8d8d8;
+    --navy:#1e3a5f;
+    --navy-deep:#13243d;
+    --green:#15613e;
+    --amber:#8a5a18;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:var(--sans);color:var(--ink);background:var(--bg);
+    -webkit-font-smoothing:antialiased}
+  body{scroll-snap-type:y mandatory;overflow-y:scroll;overflow-x:hidden}
+  body::-webkit-scrollbar{width:0}
+
+  .slide{height:100vh;width:100%;scroll-snap-align:start;scroll-snap-stop:always;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:6vh 8vw;position:relative}
+
+  .num{position:absolute;top:3vh;right:3vw;font-family:var(--mono);
+    font-size:13px;color:var(--muted);letter-spacing:.08em}
+  .footer{position:absolute;bottom:3vh;left:3vw;font-family:var(--mono);
+    font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+
+  /* Navigation dots */
+  .nav{position:fixed;right:24px;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:8px;z-index:10}
+  .nav a{display:block;width:8px;height:8px;border-radius:50%;
+    background:#d0d0d0;transition:background .15s,transform .15s;
+    border:none}
+  .nav a:hover{background:var(--navy);transform:scale(1.4)}
+  .nav a.active{background:var(--navy);transform:scale(1.4)}
+
+  /* Hint */
+  .hint{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.1em;
+    text-transform:uppercase;opacity:.85;z-index:9;
+    animation:bounce 2s ease-in-out infinite}
+  @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(4px)}}
+
+  /* Typography */
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--navy);margin-bottom:18px}
+  h1{font-size:clamp(36px, 6vw, 76px);line-height:1.05;letter-spacing:-.025em;
+    font-weight:800;color:var(--ink);margin-bottom:22px;max-width:1100px}
+  h2{font-size:clamp(28px, 4vw, 50px);line-height:1.1;letter-spacing:-.02em;
+    font-weight:800;color:var(--ink);margin-bottom:18px}
+  p.lead{font-size:clamp(18px, 1.7vw, 22px);color:var(--ink-soft);
+    line-height:1.5;max-width:880px;margin-bottom:14px}
+  p.fine{font-size:14px;color:var(--muted);max-width:760px;margin-top:8px}
+
+  /* Big number callouts */
+  .bigstat{font-family:var(--mono);font-size:clamp(80px, 11vw, 140px);
+    font-weight:700;color:var(--navy-deep);letter-spacing:-.04em;line-height:1}
+  .bigstat .u{font-size:.35em;color:var(--muted);font-weight:500;margin-left:8px}
+  .stat-row{display:flex;gap:5vw;flex-wrap:wrap;align-items:flex-end;margin:18px 0 0}
+  .stat-row .item .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.14em;font-weight:700;margin-bottom:8px}
+  .stat-row .item .val{font-family:var(--mono);font-size:clamp(38px, 4.5vw, 60px);
+    font-weight:700;color:var(--navy-deep);letter-spacing:-.02em;line-height:1}
+  .stat-row .item .sub{font-size:13px;color:var(--muted);margin-top:6px}
+
+  /* Cards */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}
+  .cards .c{padding:20px 22px;border:1px solid var(--line);background:#fafafa}
+  .cards .c .t{font-size:11px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--navy);margin-bottom:10px}
+  .cards .c .v{font-family:var(--mono);font-size:30px;font-weight:700;
+    color:var(--navy-deep);line-height:1;margin-bottom:8px}
+  .cards .c .d{font-size:13.5px;color:var(--ink-soft);line-height:1.4}
+
+  /* Mini diagram */
+  .flow{display:flex;align-items:center;justify-content:center;gap:14px;
+    margin:30px 0;flex-wrap:wrap}
+  .flow .step{padding:14px 18px;border:1.5px solid var(--navy);
+    font-family:var(--mono);font-size:13px;color:var(--navy-deep);
+    background:#eef2f7;font-weight:600}
+  .flow .arr{color:var(--muted);font-size:24px;font-weight:300}
+
+  /* Chart wrapper */
+  .chart-wrap{height:50vh;max-height:480px;margin:24px 0 10px;width:100%}
+
+  /* Pull quote */
+  .punch{font-size:clamp(22px, 2.4vw, 30px);font-weight:600;color:var(--navy);
+    border-left:4px solid var(--navy);padding:12px 0 12px 20px;margin:24px 0;
+    background:linear-gradient(90deg, #f5f7fa 0%, transparent 60%);max-width:900px;line-height:1.35}
+  .punch.warn{color:var(--amber);border-left-color:var(--amber);
+    background:linear-gradient(90deg, #fef6e3 0%, transparent 60%)}
+
+  /* Final slide */
+  .final{background:linear-gradient(135deg,#1e3a5f 0%,#13243d 100%);color:#fff}
+  .final h1{color:#fff}
+  .final .eyebrow{color:#a4b8d4}
+  .final p.lead{color:#cbd5e1}
+  .final .takeaways{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:28px}
+  .final .takeaways .t{padding:20px;background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.15)}
+  .final .takeaways .t .n{font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+    color:#7fa6c9;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+  .final .takeaways .t .h{font-size:18px;font-weight:700;color:#fff;line-height:1.3;
+    margin-bottom:8px}
+  .final .takeaways .t .b{font-size:13.5px;color:#cbd5e1;line-height:1.45}
+  .final .links{margin-top:30px;display:flex;gap:24px;font-family:var(--mono);font-size:13px}
+  .final .links a{color:#7fa6c9;text-decoration:none;border-bottom:1px solid #7fa6c9}
+  .final .links a:hover{color:#fff;border-bottom-color:#fff}
+
+  /* Cover slide */
+  .cover{background:#fff}
+  .cover .meta-strip{display:flex;gap:0;border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);margin-top:30px;max-width:1100px}
+  .cover .meta-strip .it{padding:14px 24px;border-right:1px solid var(--line);font-size:13px}
+  .cover .meta-strip .it:last-child{border-right:none}
+  .cover .meta-strip .it .k{color:var(--muted);font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;font-size:11px;display:block;margin-bottom:3px}
+  .cover .meta-strip .it .v{color:var(--ink);font-weight:700;font-family:var(--mono);font-size:14.5px}
+
+  @media (max-width:700px){
+    .cards{grid-template-columns:1fr}
+    .final .takeaways{grid-template-columns:1fr}
+    .stat-row{flex-direction:column;gap:18px;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="dots"></nav>
+<div class="hint" id="hint">↓ scroll · arrow keys</div>
+
+<!-- ───────────────────── 1 · COVER ───────────────────── -->
+<section class="slide cover" id="s1">
+  <span class="num">01 / 07</span>
+  <div class="eyebrow">PDC · Project Discussion · 5 min walkthrough</div>
+  <h1>Same problem,<br>three implementations.</h1>
+  <p class="lead">Compute <b>average / minimum / maximum</b> over 2 million rows of UCI power consumption data, three ways: <b>sequential C</b>, <b>MPI</b>, <b>Hadoop MapReduce</b>.</p>
+  <p class="lead" style="margin-top:8px"><b>The point isn't winning the benchmark — it's understanding what each tool is for, and what its overhead actually costs.</b></p>
+  <div class="meta-strip">
+    <div class="it"><span class="k">Dataset</span><span class="v">UCI Household Power</span></div>
+    <div class="it"><span class="k">Rows</span><span class="v">2,049,280</span></div>
+    <div class="it"><span class="k">Stacks</span><span class="v">3</span></div>
+    <div class="it"><span class="k">Correctness</span><span class="v">avg 1.091615 · min 0.076 · max 11.122</span></div>
+  </div>
+  <span class="footer">Aser Osama · Tasneem Eltabakh</span>
+</section>
+
+<!-- ───────────────────── 2 · PHASE 1 ───────────────────── -->
+<section class="slide" id="s2">
+  <span class="num">02 / 07</span>
+  <div class="eyebrow">Phase 1 · C + MPI</div>
+  <h2>One pass over an array, four MPI primitives.</h2>
+  <div class="flow">
+    <div class="step">fread → a[N]</div>
+    <div class="arr">→</div>
+    <div class="step">MPI_Bcast</div>
+    <div class="arr">→</div>
+    <div class="step">MPI_Scatterv</div>
+    <div class="arr">→</div>
+    <div class="step">local sum/min/max</div>
+    <div class="arr">→</div>
+    <div class="step">MPI_Reduce ×3</div>
+  </div>
+  <div class="stat-row">
+    <div class="item">
+      <div class="lbl">Sequential C</div>
+      <div class="val">3.18 ms</div>
+      <div class="sub">baseline</div>
+    </div>
+    <div class="item">
+      <div class="lbl">MPI @ 2 procs</div>
+      <div class="val" style="color:var(--green)">0.609 ms</div>
+      <div class="sub">5.22× speedup &mdash; fastest config</div>
+    </div>
+    <div class="item">
+      <div class="lbl">MPI @ 8 procs</div>
+      <div class="val" style="color:var(--amber)">0.886 ms</div>
+      <div class="sub">slower than n=2 &mdash; bandwidth-bound</div>
+    </div>
+  </div>
+  <p class="punch warn">Flat from n=2 onwards: the loop reads 16 MB from DRAM and adding more ranks doesn't add memory bandwidth.</p>
+</section>
+
+<!-- ───────────────────── 3 · PHASE 2 ───────────────────── -->
+<section class="slide" id="s3">
+  <span class="num">03 / 07</span>
+  <div class="eyebrow">Phase 2 · Hadoop MapReduce</div>
+  <h2>Same operation, packaged as a single MR job.</h2>
+  <div class="flow">
+    <div class="step">HDFS</div>
+    <div class="arr">→</div>
+    <div class="step">Mapper</div>
+    <div class="arr">→</div>
+    <div class="step">Combiner</div>
+    <div class="arr">→</div>
+    <div class="step">Reducer × K</div>
+    <div class="arr">→</div>
+    <div class="step">Driver merge</div>
+    <div class="arr">→</div>
+    <div class="step">HDFS</div>
+  </div>
+  <p class="lead" style="margin-top:8px">Java <code style="font-family:var(--mono);background:#f0f0ee;padding:1px 6px">PowerStats</code> custom Writable carries <code style="font-family:var(--mono);background:#f0f0ee;padding:1px 6px">{sum, count, min, max}</code> through the whole pipeline. We bucket by <code style="font-family:var(--mono);background:#f0f0ee;padding:1px 6px">lineNo % 16</code> so all reducer counts actually do parallel work.</p>
+
+  <div class="stat-row" style="margin-top:30px">
+    <div class="item">
+      <div class="lbl">Hadoop @ 1 reducer</div>
+      <div class="val">19,336 ms</div>
+      <div class="sub">best of 15 runs</div>
+    </div>
+    <div class="item">
+      <div class="lbl">Hadoop @ 8 reducers</div>
+      <div class="val" style="color:var(--amber)">25,347 ms</div>
+      <div class="sub">slower! see below</div>
+    </div>
+  </div>
+  <p class="punch warn">More reducers &rarr; <b>slower</b>. Every extra reducer adds a container/JVM launch (~1-2 s) with no extra parallel work to offset it on 16 MB.</p>
+</section>
+
+<!-- ───────────────────── 4 · WHERE THE TIME GOES ───────────────────── -->
+<section class="slide" id="s4">
+  <span class="num">04 / 07</span>
+  <div class="eyebrow">Where does the 19 seconds go?</div>
+  <h2>>99% of it is framework overhead.</h2>
+  <p class="lead">Same code runs in 3 modes — strip overhead, watch wallclock fall.</p>
+  <div class="cards">
+    <div class="c">
+      <div class="t">Default · full YARN</div>
+      <div class="v">19,336 ms</div>
+      <div class="d">Containers, AppMaster, shuffle, the full cluster path.</div>
+    </div>
+    <div class="c">
+      <div class="t">Uber mode</div>
+      <div class="v">11,312 ms <span style="color:var(--green);font-size:14px;font-family:var(--sans)">↓ 1.71×</span></div>
+      <div class="d">AppMaster runs the whole job in-process. Skips map/reduce containers.</div>
+    </div>
+    <div class="c">
+      <div class="t">LocalJobRunner</div>
+      <div class="v">3,558 ms <span style="color:var(--green);font-size:14px;font-family:var(--sans)">↓ 5.43×</span></div>
+      <div class="d">Same Mapper/Reducer code in the client JVM. No YARN at all.</div>
+    </div>
+  </div>
+  <p class="punch">LocalJobRunner runs the <b>same Java code</b> as the YARN path. The 5.4× speedup is pure overhead removal &mdash; not an algorithmic change.</p>
+</section>
+
+<!-- ───────────────────── 5 · CROSS STACK ───────────────────── -->
+<section class="slide" id="s5">
+  <span class="num">05 / 07</span>
+  <div class="eyebrow">Cross-stack comparison</div>
+  <h2>Five orders of magnitude, same answer.</h2>
+  <div class="chart-wrap"><canvas id="cmpChart"></canvas></div>
+  <p class="fine" style="text-align:center;margin-top:8px">Best of N runs on the same machine, same dataset. Log scale &mdash; bars are <em>milliseconds</em>.</p>
+</section>
+
+<!-- ───────────────────── 6 · WHY THE GAP ───────────────────── -->
+<section class="slide" id="s6">
+  <span class="num">06 / 07</span>
+  <div class="eyebrow">Why the gap?</div>
+  <h2>Each tool is optimal for a different scale of problem.</h2>
+  <div class="cards" style="margin-top:30px">
+    <div class="c">
+      <div class="t">MPI · 0.6 ms</div>
+      <div class="d" style="font-size:15px;margin-top:8px">Native C, shared memory, no framework overhead. <b>Built for one machine or a tight cluster</b> where everything fits in memory.</div>
+    </div>
+    <div class="c">
+      <div class="t">Sequential · 3 ms</div>
+      <div class="d" style="font-size:15px;margin-top:8px">Same compiled code, one thread. <b>Single-machine baseline</b>. If your data fits and you're not bandwidth-bound, this is hard to beat.</div>
+    </div>
+    <div class="c">
+      <div class="t">Hadoop · 19 s</div>
+      <div class="d" style="font-size:15px;margin-top:8px">~15 s of fixed framework overhead per job. <b>Built for petabytes on thousands of nodes</b>, where that overhead amortises over hours of compute.</div>
+    </div>
+  </div>
+  <p class="punch">On 16 MB on one laptop, sequential C wins. The same Hadoop code would scale to TB-inputs on a real cluster without changes &mdash; that's what we're paying for.</p>
+</section>
+
+<!-- ───────────────────── 7 · CLOSE ───────────────────── -->
+<section class="slide final" id="s7">
+  <span class="num" style="color:#a4b8d4">07 / 07</span>
+  <div class="eyebrow">Takeaways</div>
+  <h1>What this project shows.</h1>
+  <p class="lead">Same problem, same correctness, five orders of magnitude difference in wallclock &mdash; and a clear explanation of <em>why</em> at each step.</p>
+  <div class="takeaways">
+    <div class="t">
+      <div class="n">01 · Correctness</div>
+      <div class="h">All 7 configurations match NumPy</div>
+      <div class="b">Bit-exact min/max, mean within 1e-9. Verified end-to-end.</div>
+    </div>
+    <div class="t">
+      <div class="n">02 · Honest scaling</div>
+      <div class="h">MPI flat at n≥2, Hadoop slower at K≥2</div>
+      <div class="b">Both phases hit real ceilings &mdash; bandwidth in MPI, overhead in Hadoop &mdash; and we measured why, instead of hiding it.</div>
+    </div>
+    <div class="t">
+      <div class="n">03 · Right tool, right scale</div>
+      <div class="h">Tradeoffs quantified, not hand-waved</div>
+      <div class="b">Speed ladder shows exactly how much each layer of Hadoop overhead costs. The "use what fits the problem" lesson is concrete.</div>
+    </div>
+  </div>
+  <div class="links">
+    <span style="color:#7fa6c9">Deep dive:</span>
+    <a href="final_report.html">final_report.html</a>
+    <a href="ph1/report.html">ph1/report.html</a>
+    <a href="ph2/report.html">ph2/report.html</a>
+  </div>
+</section>
+
+<script>
+  // Pagination dots
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.getElementById('dots');
+  slides.forEach((s, i) => {
+    const a = document.createElement('a');
+    a.href = '#' + s.id;
+    a.title = `Slide ${i+1}`;
+    a.dataset.idx = i;
+    dots.appendChild(a);
+  });
+  const dotEls = dots.querySelectorAll('a');
+
+  // Active dot via IntersectionObserver
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio > 0.5) {
+        const i = Array.from(slides).indexOf(e.target);
+        dotEls.forEach((d, j) => d.classList.toggle('active', j === i));
+        // hide hint after first scroll past slide 1
+        if (i > 0) document.getElementById('hint').style.display = 'none';
+      }
+    });
+  }, { threshold: [0.5] });
+  slides.forEach(s => obs.observe(s));
+
+  // Arrow key navigation
+  document.addEventListener('keydown', (e) => {
+    const cur = Array.from(dotEls).findIndex(d => d.classList.contains('active'));
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      const next = Math.min(slides.length - 1, cur + 1);
+      slides[next].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = Math.max(0, cur - 1);
+      slides[prev].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Cross-stack chart
+  new Chart(document.getElementById('cmpChart'), {
+    type: 'bar',
+    data: {
+      labels: ['MPI @ 2', 'Sequential C', 'Hadoop · Local', 'Hadoop · uber', 'Hadoop · YARN'],
+      datasets: [{
+        label: 'best (ms)',
+        data: [0.609, 3.176, 3558, 11312, 19336],
+        backgroundColor: ['#15613e', '#1e3a5f', '#446a4d', '#8a5a18', '#7a3a1a'],
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: c => ` ${c.raw.toLocaleString()} ms` }
+        }
+      },
+      scales: {
+        x: {
+          type: 'logarithmic',
+          title: { display: true, text: 'milliseconds (log scale)', font: { size: 13 } },
+          grid: { color: '#e8e8e8' },
+          ticks: { font: { family: "'JetBrains Mono', monospace", size: 12 } }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: "'Inter', sans-serif", size: 15, weight: 600 } }
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>

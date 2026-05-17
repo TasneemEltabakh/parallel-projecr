@@ -121,6 +121,7 @@
   .chartbox{padding:16px;border:1px solid var(--line);background:var(--bg-soft);
     margin:14px 0}
   .chartbox .cap{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+  .chart-wrap{position:relative;height:260px;width:100%}
 
   /* Mermaid */
   .mermaid{margin:14px 0;text-align:center}
@@ -347,7 +348,7 @@ flowchart LR
       <p>Same problem on the same machine. Times below are <b>best of N runs</b>, on a single laptop. Note the log scale — these numbers span <b>five orders of magnitude</b>.</p>
 
       <div class="chartbox">
-        <canvas id="crossStack" height="190"></canvas>
+        <div class="chart-wrap"><canvas id="crossStack"></canvas></div>
         <div class="cap">elapsed time per implementation — log scale, lower is better</div>
       </div>
 

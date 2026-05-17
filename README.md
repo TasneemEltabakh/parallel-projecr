@@ -15,7 +15,9 @@ float per line, HDFS-friendly).
 Each phase has its own README with setup, build, and run instructions.
 The headline benchmark tables are in `ph1/results.csv` and `ph2/results.csv`.
 
-For a 5–10 minute walkthrough covering both phases and the cross-stack
-comparison, open **[`final_report.html`](final_report.html)**.
+- **5 min · scroll-snap slide deck**: [`presentation.html`](presentation.html) —
+  7 slides, big text, arrow-key nav. Use this for the live discussion.
+- **10 min · scrolling write-up**: [`final_report.html`](final_report.html) —
+  same content with more detail and a sticky sidebar nav.
 
 Requirements for both phases are in [`requirement.md`](requirement.md).
