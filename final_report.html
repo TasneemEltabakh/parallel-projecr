@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PDC Project — Sequential / MPI / Hadoop on UCI Power Consumption</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#ffffff;
+    --bg-soft:#f7f7f5;
+    --panel:#ffffff;
+    --ink:#0b0b0d;
+    --ink-soft:#2a2c33;
+    --muted:#6b6e76;
+    --line:#d8d8d8;
+    --line-soft:#e8e8e8;
+    --navy:#1e3a5f;
+    --navy-deep:#13243d;
+    --navy-tint:#eef2f7;
+    --green:#15613e;
+    --green-tint:#e7efe9;
+    --amber:#8a5a18;
+    --amber-tint:#f7f0dc;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.65;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--navy);text-decoration:none;border-bottom:1px solid transparent}
+  a:hover{border-bottom-color:var(--navy)}
+  code{font-family:var(--mono);font-size:.92em;background:var(--bg-soft);
+    padding:1px 5px;border-radius:3px;color:var(--ink-soft)}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:220px minmax(0,1fr);
+    max-width:1120px;margin:0 auto;gap:48px;padding:36px 32px 96px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;gap:24px;padding:24px 18px 60px}}
+
+  /* Sidebar */
+  aside{position:sticky;top:24px;align-self:start;height:max-content}
+  aside .brand{padding:0 4px 18px;border-bottom:2px solid var(--ink);margin-bottom:14px}
+  aside .brand .ttl{font-weight:800;font-size:15px}
+  aside .brand .sub{color:var(--muted);font-size:11.5px;font-weight:500;
+    margin-top:3px;letter-spacing:.04em;text-transform:uppercase}
+  aside nav{display:flex;flex-direction:column}
+  aside nav a{display:flex;align-items:center;gap:12px;padding:8px 0 8px 12px;
+    color:var(--ink-soft);font-size:13.5px;font-weight:500;
+    border-bottom:none;border-left:2px solid transparent}
+  aside nav a .n{font-family:var(--mono);font-size:11px;color:var(--muted);width:18px}
+  aside nav a:hover{color:var(--ink)}
+  aside nav a.active{color:var(--navy);font-weight:600;border-left-color:var(--navy)}
+  aside nav a.active .n{color:var(--navy)}
+  aside .read{margin-top:22px;padding:14px 16px;border:1px solid var(--line);
+    background:var(--bg-soft);font-size:12px;color:var(--muted)}
+  aside .read b{color:var(--ink)}
+
+  /* Main */
+  main{min-width:0}
+  section{margin-bottom:64px;scroll-margin-top:24px}
+  section.first{margin-bottom:48px}
+  .eyebrow{display:inline-block;font-size:11px;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--navy);
+    padding:4px 10px;border:1px solid var(--navy);margin-bottom:18px}
+  h1{font-size:36px;line-height:1.15;letter-spacing:-.02em;
+    font-weight:800;margin:0 0 14px;max-width:780px}
+  h2{font-size:24px;font-weight:700;letter-spacing:-.012em;
+    margin:0 0 8px;padding-bottom:10px;border-bottom:2px solid var(--ink);
+    display:flex;align-items:baseline;gap:14px}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500}
+  h3{font-size:16px;font-weight:700;margin:18px 0 8px;color:var(--ink)}
+  p{margin:0 0 12px;max-width:760px;color:var(--ink-soft)}
+  p.lead{font-size:17px;color:var(--ink-soft);max-width:720px}
+
+  /* Hero strip */
+  .meta-strip{display:flex;flex-wrap:wrap;gap:0;margin:22px 0 0;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .meta-strip .it{padding:10px 18px;border-right:1px solid var(--line);font-size:12px}
+  .meta-strip .it:last-child{border-right:none}
+  .meta-strip .it .k{color:var(--muted);font-weight:600;text-transform:uppercase;
+    letter-spacing:.08em;font-size:10.5px;display:block;margin-bottom:2px}
+  .meta-strip .it .v{color:var(--ink);font-weight:600;font-family:var(--mono);font-size:12.5px}
+
+  /* KPI grid */
+  .kpis{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    margin:20px 0 8px}
+  .kpi{padding:18px 18px 14px;border:1px solid var(--line);background:var(--bg-soft)}
+  .kpi .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.12em;font-weight:700;margin-bottom:8px}
+  .kpi .val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--navy-deep);
+    line-height:1.1;letter-spacing:-.01em}
+  .kpi .val .unit{font-size:12px;color:var(--muted);font-weight:500;margin-left:4px}
+  .kpi .sub{font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* Cards */
+  .card{padding:18px 20px;border:1px solid var(--line);background:var(--panel);margin:14px 0}
+  .card .title{font-size:13px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;color:var(--navy);margin-bottom:10px}
+  .two-col{display:grid;gap:18px;grid-template-columns:1fr 1fr;margin:14px 0}
+  @media (max-width:720px){.two-col{grid-template-columns:1fr}}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0 14px}
+  th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.08em;padding:10px 12px;text-align:left;border-bottom:1px solid var(--ink);
+    background:var(--bg-soft)}
+  td{padding:10px 12px;border-bottom:1px solid var(--line-soft);color:var(--ink-soft)}
+  td.num{font-family:var(--mono);text-align:right;color:var(--ink)}
+  td.label{font-weight:600;color:var(--ink)}
+  tr.best td{background:var(--green-tint)}
+  tr.worst td{background:var(--amber-tint)}
+
+  /* Chart wrapper */
+  .chartbox{padding:16px;border:1px solid var(--line);background:var(--bg-soft);
+    margin:14px 0}
+  .chartbox .cap{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+
+  /* Mermaid */
+  .mermaid{margin:14px 0;text-align:center}
+
+  /* Note */
+  .note{padding:14px 18px;border-left:3px solid var(--navy);background:var(--navy-tint);
+    margin:14px 0;font-size:14.5px;color:var(--navy-deep)}
+  .note.warn{border-left-color:var(--amber);background:var(--amber-tint);color:var(--amber)}
+  .note .lbl{font-weight:700;text-transform:uppercase;font-size:10.5px;
+    letter-spacing:.12em;display:block;margin-bottom:4px;color:inherit}
+
+  /* Compact list */
+  ul.tight{margin:6px 0 12px;padding-left:20px}
+  ul.tight li{margin:4px 0;color:var(--ink-soft)}
+  ul.tight li b{color:var(--ink)}
+
+  footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside>
+    <div class="brand">
+      <div class="ttl">PDC Project</div>
+      <div class="sub">Walkthrough · ~8 min</div>
+    </div>
+    <nav id="nav">
+      <a href="#problem"  class="active"><span class="n">01</span>The problem</a>
+      <a href="#dataset"><span class="n">02</span>Dataset</a>
+      <a href="#phase1"><span class="n">03</span>Phase 1 · MPI</a>
+      <a href="#phase2"><span class="n">04</span>Phase 2 · Hadoop</a>
+      <a href="#compare"><span class="n">05</span>Comparison</a>
+      <a href="#takeaways"><span class="n">06</span>Takeaways</a>
+    </nav>
+    <div class="read">
+      <b>Deep dives:</b><br>
+      <a href="ph1/report.html">ph1/report.html</a> · <a href="ph2/report.html">ph2/report.html</a>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- 01 PROBLEM ──────────────────────────────────── -->
+    <section id="problem" class="first">
+      <span class="eyebrow">PDC · Project Walkthrough</span>
+      <h1>Same problem, three implementations. What did each tool buy us?</h1>
+      <p class="lead">Compute <b>average / minimum / maximum</b> of a numeric column over a 2&nbsp;million-row dataset, three ways: a sequential C baseline, an MPI parallel version, and a Hadoop MapReduce job. The point isn't winning a benchmark — it's understanding what each tool is for, and what its overhead actually costs you.</p>
+
+      <div class="meta-strip">
+        <div class="it"><span class="k">Dataset</span><span class="v">UCI Household Power</span></div>
+        <div class="it"><span class="k">Rows</span><span class="v">2,049,280</span></div>
+        <div class="it"><span class="k">Phase 1</span><span class="v">C + MPI</span></div>
+        <div class="it"><span class="k">Phase 2</span><span class="v">Hadoop / Java</span></div>
+        <div class="it"><span class="k">Stacks</span><span class="v">3</span></div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">Phase 1 best</div><div class="val">0.609<span class="unit">ms</span></div><div class="sub">MPI @ 2 procs</div></div>
+        <div class="kpi"><div class="lbl">Phase 2 best</div><div class="val">3,558<span class="unit">ms</span></div><div class="sub">Hadoop LocalJobRunner</div></div>
+        <div class="kpi"><div class="lbl">Phase 2 vs Phase 1</div><div class="val">5,840×</div><div class="sub">Hadoop is slower per job</div></div>
+        <div class="kpi"><div class="lbl">All configs match NumPy</div><div class="val">7&nbsp;/&nbsp;7</div><div class="sub">Correctness verified</div></div>
+      </div>
+
+      <div class="note">
+        <span class="lbl">Reading guide</span>
+        Every Hadoop run produces the same <code>avg = 1.091615, min = 0.076, max = 11.122</code> as Phase 1 — the bit-exact reference from NumPy. Wallclock differs by orders of magnitude. That difference is the story.
+      </div>
+    </section>
+
+    <!-- 02 DATASET ──────────────────────────────────── -->
+    <section id="dataset">
+      <h2><span class="n">02</span>Dataset &amp; preparation</h2>
+      <p>UCI <b>Household Power Consumption</b> archive — 2,075,259 raw rows of minute-by-minute electricity measurements; we extracted the <code>Global_active_power</code> column and dropped NaN, leaving <b>2,049,280</b> floats.</p>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="title">Source</div>
+          <table>
+            <tr><td class="label">Origin</td><td>UCI ML archive (id 235)</td></tr>
+            <tr><td class="label">Column</td><td><code>Global_active_power</code></td></tr>
+            <tr><td class="label">Raw rows</td><td class="num">2,075,259</td></tr>
+            <tr><td class="label">After NaN drop</td><td class="num">2,049,280</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <div class="title">Two on-disk formats, one source</div>
+          <table>
+            <tr><td class="label"><code>data.bin</code></td><td>16.4 MB · flat float64<br><span style="font-size:12px;color:var(--muted)">Phase 1 reads via <code>fread</code></span></td></tr>
+            <tr><td class="label"><code>data.txt</code></td><td>12.3 MB · one float per line<br><span style="font-size:12px;color:var(--muted)">Phase 2 uploads to HDFS, reads via <code>TextInputFormat</code></span></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="title">NumPy reference — correctness gate for both phases</div>
+        <table>
+          <tr><td class="label">sum</td><td class="num">2,237,024.862</td>
+              <td class="label">min</td><td class="num">0.076</td></tr>
+          <tr><td class="label">mean</td><td class="num">1.091615</td>
+              <td class="label">max</td><td class="num">11.122</td></tr>
+        </table>
+        <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Every C and Java run is checked against these. <code>min</code>/<code>max</code> match bit-exactly; <code>mean</code> within ~1e-9 due to floating-point reduction order.</p>
+      </div>
+    </section>
+
+    <!-- 03 PHASE 1 ──────────────────────────────────── -->
+    <section id="phase1">
+      <h2><span class="n">03</span>Phase 1 — Sequential C vs MPI</h2>
+      <p>Both binaries do the same work in a single pass over <code>a[N]</code>. The MPI version distributes the array with <code>MPI_Scatterv</code> and combines partial results with <code>MPI_Reduce</code>.</p>
+
+      <div class="mermaid">
+flowchart LR
+  A[data.bin] -->|fread| B[rank 0]
+  B -->|MPI_Bcast N| C[all ranks]
+  B -->|MPI_Scatterv| D[per-rank chunk]
+  D --> E[local sum/min/max]
+  E -->|MPI_Reduce ×3| F[rank 0: avg / min / max]
+  style B fill:#eef2f7,stroke:#1e3a5f
+  style F fill:#e7efe9,stroke:#15613e
+      </div>
+
+      <h3>MPI primitives used</h3>
+      <table>
+        <thead><tr><th>Step</th><th>Primitive</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>MPI_Bcast</code></td><td>Send array length N from rank 0 to every rank</td></tr>
+          <tr><td>2</td><td><code>MPI_Scatterv</code></td><td>Distribute the array in per-rank chunks (uneven splits OK)</td></tr>
+          <tr><td>3</td><td><code>MPI_Reduce</code> ×3</td><td>Combine partial sum / max / min at rank 0</td></tr>
+          <tr><td>4</td><td><code>MPI_Wtime</code> + <code>MPI_Barrier</code></td><td>High-resolution timing, no rank starts early</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Results (15 reps, best time, milliseconds)</h3>
+      <table>
+        <thead><tr><th>Config</th><th class="num">best (ms)</th><th class="num">median</th><th class="num">speedup vs seq</th></tr></thead>
+        <tbody>
+          <tr><td class="label">sequential</td><td class="num">3.176</td><td class="num">3.637</td><td class="num">1.00×</td></tr>
+          <tr><td class="label">mpi n=1</td><td class="num">1.006</td><td class="num">1.200</td><td class="num">3.16×</td></tr>
+          <tr class="best"><td class="label">mpi n=2 (fastest)</td><td class="num">0.609</td><td class="num">1.279</td><td class="num">5.22×</td></tr>
+          <tr><td class="label">mpi n=4</td><td class="num">0.711</td><td class="num">1.177</td><td class="num">4.47×</td></tr>
+          <tr><td class="label">mpi n=8</td><td class="num">0.886</td><td class="num">1.477</td><td class="num">3.58×</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <span class="lbl">What we learned</span>
+        Scaling is <b>flat from n=2 to n=8</b>. The workload is <b>memory-bandwidth-bound</b> — the loop does ~2 instructions per element but one DRAM read. The 16 MB array doesn't fit in L3, so adding ranks on the same memory bus can't buy more bandwidth. Textbook linear speedup would need either a multi-node cluster or per-element compute (e.g. <code>sin(v)·cos(v)</code>).
+      </div>
+    </section>
+
+    <!-- 04 PHASE 2 ──────────────────────────────────── -->
+    <section id="phase2">
+      <h2><span class="n">04</span>Phase 2 — Hadoop MapReduce</h2>
+      <p>Same operation, packaged as a single Java MR job. Apache Hadoop 3.3.6 runs pseudo-distributed in a Docker container; we vary <code>--reduces</code> over 1/2/4/8 as the analog to MPI's process-count sweep.</p>
+
+      <div class="mermaid">
+flowchart LR
+  A[hdfs:///input/data.txt] --> M[StatsMapper<br/>bucket = lineNo mod 16]
+  M --> C[StatsReducer<br/>as combiner]
+  C -->|shuffle| R[StatsReducer<br/>K reducers]
+  R --> P[K · part-r-* SequenceFiles]
+  P --> D[Driver<br/>client-side merge]
+  D --> O[hdfs:///output/final/stats.txt]
+  style M fill:#eef2f7,stroke:#1e3a5f
+  style R fill:#eef2f7,stroke:#1e3a5f
+  style O fill:#e7efe9,stroke:#15613e
+      </div>
+
+      <p style="font-size:13.5px;color:var(--muted)">
+        <b>Why bucket by <code>lineNo % 16</code>?</b> A single key would route all data to one reducer regardless of <code>--reduces N</code> — the sweep would be meaningless. 16 buckets &gt; the largest K in the sweep, so 1/2/4/8 reducers all get real load.
+      </p>
+
+      <h3>Results — default YARN (15 reps each)</h3>
+      <table>
+        <thead><tr><th>Reducers</th><th class="num">best (ms)</th><th class="num">median</th><th class="num">speedup vs 1 reducer</th></tr></thead>
+        <tbody>
+          <tr class="best"><td class="label">1</td><td class="num">19,336</td><td class="num">20,152</td><td class="num">1.00×</td></tr>
+          <tr><td class="label">2</td><td class="num">20,299</td><td class="num">21,323</td><td class="num">0.95×</td></tr>
+          <tr><td class="label">4</td><td class="num">22,013</td><td class="num">23,315</td><td class="num">0.88×</td></tr>
+          <tr class="worst"><td class="label">8</td><td class="num">25,347</td><td class="num">27,330</td><td class="num">0.76×</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note warn">
+        <span class="lbl">Unexpected but explainable</span>
+        More reducers → <b>slower</b>. On a single-node cluster, every extra reducer adds container-launch overhead while the per-reducer compute stays trivial (combiner already shrunk the shuffle to ~KB). This isn't a bug; it's pseudo-distributed Hadoop honestly reporting its overhead.
+      </div>
+
+      <h3>Where do the ~19 seconds go?</h3>
+      <p>Each MR job spends &gt;99% of its wallclock in framework overhead, not on the 16 MB of arithmetic. Approximate breakdown of one <code>--reduces 1</code> run:</p>
+      <table>
+        <thead><tr><th>Stage</th><th class="num">Time</th><th>What</th></tr></thead>
+        <tbody>
+          <tr><td class="label"><code>hadoop jar</code> startup</td><td class="num">~2 s</td><td>Cold-load Hadoop client, connect to ResourceManager</td></tr>
+          <tr><td class="label">AM scheduling + JVM</td><td class="num">~4 s</td><td>RM picks node, NM launches AppMaster</td></tr>
+          <tr><td class="label">Map containers + JVMs</td><td class="num">~6 s</td><td>Heartbeat-driven, one JVM per split</td></tr>
+          <tr><td class="label">Shuffle + sort</td><td class="num">~1 s</td><td>Disk I/O even with KB-sized payload</td></tr>
+          <tr><td class="label">Reduce containers + JVMs</td><td class="num">~4 s</td><td>Same pattern as maps</td></tr>
+          <tr><td class="label">AM cleanup + commit</td><td class="num">~2 s</td><td>Final HDFS commit, AM teardown</td></tr>
+          <tr class="best"><td class="label"><b>Actual compute on 16 MB</b></td><td class="num"><b>~0.1 s</b></td><td>What the job nominally does</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Speed ladder — strip overhead, watch it fall</h3>
+      <p>We empirically measured three modes, all running the <b>same Mapper/Reducer/Driver code</b> on the <b>same HDFS input</b>:</p>
+      <table>
+        <thead><tr><th>Mode</th><th class="num">best (ms)</th><th class="num">vs default</th><th>What it skips</th></tr></thead>
+        <tbody>
+          <tr><td class="label">Default MR + YARN</td><td class="num">19,336</td><td class="num">1.00×</td><td>Nothing — full cluster path</td></tr>
+          <tr><td class="label">Uber mode <span style="font-size:11px;color:var(--muted)"><code>-Dmapreduce.job.ubertask.enable=true</code></span></td><td class="num">11,312</td><td class="num">1.71×</td><td>Map/reduce containers — AM runs the whole job in-process</td></tr>
+          <tr class="best"><td class="label">LocalJobRunner <span style="font-size:11px;color:var(--muted)"><code>-Dmapreduce.framework.name=local</code></span></td><td class="num">3,558</td><td class="num">5.43×</td><td>YARN entirely — runs in the client JVM, still reads from HDFS</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:13.5px;color:var(--muted)">
+        LocalJobRunner's remaining ~3.5 s is JVM cold-start (~1 s) + Hadoop framework class loading (~1.5 s) + in-process MR (~1 s). The "slowness" of Hadoop on tiny data is the cluster machinery, not MapReduce itself.
+      </p>
+    </section>
+
+    <!-- 05 COMPARISON ──────────────────────────────────── -->
+    <section id="compare">
+      <h2><span class="n">05</span>Cross-stack comparison</h2>
+      <p>Same problem on the same machine. Times below are <b>best of N runs</b>, on a single laptop. Note the log scale — these numbers span <b>five orders of magnitude</b>.</p>
+
+      <div class="chartbox">
+        <canvas id="crossStack" height="190"></canvas>
+        <div class="cap">elapsed time per implementation — log scale, lower is better</div>
+      </div>
+
+      <table>
+        <thead><tr><th>Implementation</th><th class="num">best (ms)</th><th class="num">vs MPI@2</th><th>Why it lands here</th></tr></thead>
+        <tbody>
+          <tr class="best"><td class="label">MPI @ 2 procs</td><td class="num">0.609</td><td class="num">1×</td><td>Native code, shared memory, no framework</td></tr>
+          <tr><td class="label">Sequential C</td><td class="num">3.176</td><td class="num">5×</td><td>Same compiled code, single thread</td></tr>
+          <tr><td class="label">Hadoop · LocalJobRunner</td><td class="num">3,558</td><td class="num">5,840×</td><td>JVM cold-start + Hadoop class loading</td></tr>
+          <tr><td class="label">Hadoop · uber mode</td><td class="num">11,312</td><td class="num">18,575×</td><td>Above + AM container scheduling</td></tr>
+          <tr class="worst"><td class="label">Hadoop · default YARN</td><td class="num">19,336</td><td class="num">31,750×</td><td>Above + map/reduce container negotiation</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <span class="lbl">Right tool for the job</span>
+        On 16 MB of data on one laptop, <b>sequential C wins</b>. MPI is 5× faster than sequential but capped by memory bandwidth. Hadoop's ~20 second per-job overhead is fixed regardless of input size — it only pays off when per-job compute is also seconds-or-minutes long, which means hundreds-of-GB inputs across many nodes.
+      </div>
+    </section>
+
+    <!-- 06 TAKEAWAYS ──────────────────────────────────── -->
+    <section id="takeaways">
+      <h2><span class="n">06</span>Key takeaways</h2>
+
+      <div class="card">
+        <div class="title">What this project demonstrates</div>
+        <ul class="tight">
+          <li><b>All three implementations are correct</b> — bit-exact min/max, mean within 1e-9 of NumPy, across 7 distinct configurations.</li>
+          <li><b>MPI scales to a hardware ceiling, not a code ceiling.</b> Phase 1's flat scaling at n≥2 is a memory bandwidth story, documented honestly rather than hidden.</li>
+          <li><b>Hadoop's overhead is the headline.</b> 99% of wallclock is framework, 1% is work. Quantifying it via uber-mode and LocalJobRunner makes the cost concrete instead of hand-waved.</li>
+          <li><b>Cross-stack comparison is the point.</b> Same problem · same data · same correctness · 31,750× difference in wallclock. Each tool is correct for a different scale of problem.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="title">When to reach for which</div>
+        <table>
+          <tr><td class="label" style="width:35%">Data fits on one machine, you control the code</td>
+              <td>Sequential C / OpenMP. If it's bandwidth-bound, accept the ceiling.</td></tr>
+          <tr><td class="label">Data fits but you want shared-memory parallelism</td>
+              <td>MPI on one node, or threads. Watch for the bandwidth wall.</td></tr>
+          <tr><td class="label">Data doesn't fit on one machine and the per-job compute is minutes+</td>
+              <td>Hadoop / Spark on a real cluster. Overhead amortizes.</td></tr>
+          <tr><td class="label">Testing the logic of an MR job locally</td>
+              <td><code>mapreduce.framework.name=local</code>. ~3 s instead of ~20 s per iteration.</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="title">Reproducibility</div>
+        <p style="font-size:13.5px;color:var(--muted);margin:0 0 6px">Everything builds and runs from a clean checkout with two dependencies (Docker + a JDK).</p>
+        <ul class="tight" style="font-size:13.5px">
+          <li><code>python3 data/prep.py</code> — downloads &amp; preprocesses (~30 s)</li>
+          <li><b>Phase 1:</b> <code>cd ph1 &amp;&amp; make &amp;&amp; ./bench/benchmark.sh</code></li>
+          <li><b>Phase 2:</b> <code>cd ph2 &amp;&amp; ./docker/run-cluster.sh &amp;&amp; make put &amp;&amp; make bench</code></li>
+          <li>Full per-phase write-ups: <a href="ph1/report.html">ph1/report.html</a> · <a href="ph2/report.html">ph2/report.html</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      Sequential / MPI / Hadoop on UCI Household Power Consumption · 2026 · <a href="ph1/report.html">Phase 1 report</a> · <a href="ph2/report.html">Phase 2 report</a>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  mermaid.initialize({startOnLoad:true, theme:'neutral',
+    themeVariables:{
+      primaryColor:'#ffffff', primaryTextColor:'#0b0b0d',
+      primaryBorderColor:'#1e3a5f', lineColor:'#6b6e76',
+      fontFamily:'Inter,sans-serif', fontSize:'13px'
+    }});
+
+  // Cross-stack chart — log scale
+  new Chart(document.getElementById('crossStack'), {
+    type:'bar',
+    data:{
+      labels:['MPI @ 2', 'Sequential C', 'Hadoop · Local', 'Hadoop · uber', 'Hadoop · YARN'],
+      datasets:[{
+        label:'best elapsed (ms)',
+        data:[0.609, 3.176, 3558, 11312, 19336],
+        backgroundColor:['#15613e','#1e3a5f','#446a4d','#8a5a18','#7a3a1a'],
+        borderColor:'#0b0b0d', borderWidth:1
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      indexAxis:'y',
+      plugins:{legend:{display:false}, tooltip:{callbacks:{
+        label:c=>` ${c.raw.toLocaleString()} ms`
+      }}},
+      scales:{
+        x:{type:'logarithmic', title:{display:true,text:'milliseconds (log)'},
+           grid:{color:'#e8e8e8'}, ticks:{font:{family:'JetBrains Mono'}}},
+        y:{grid:{display:false}, ticks:{font:{family:'Inter', weight:'500'}}}
+      }
+    }
+  });
+
+  // Scrollspy
+  const nav = document.querySelectorAll('aside nav a');
+  const sections = Array.from(document.querySelectorAll('section'));
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const id = e.target.id;
+        nav.forEach(a => a.classList.toggle('active', a.getAttribute('href')==='#'+id));
+      }
+    });
+  }, {rootMargin:'-40% 0px -55% 0px'});
+  sections.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
